@@ -490,11 +490,13 @@ select:focus {
   position: relative;
   min-height: 24px;
   max-width: 100%;
+  --port-tint: color-mix(in srgb, var(--port-color, #64748b) 10%, #ffffff);
+  --port-border-soft: color-mix(in srgb, var(--port-color, #64748b) 28%, #d9e1ec);
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 3px 7px;
-  border: 1px solid #d9e1ec;
+  border: 1px solid var(--port-border-soft);
   border-left: 4px solid var(--port-color, #64748b);
   border-radius: 5px;
   background: #ffffff;
@@ -505,8 +507,8 @@ select:focus {
 
 .port-button:hover,
 .port-button.pending {
-  border-color: var(--accent);
-  background: #ecfdf5;
+  border-color: var(--port-color, #64748b);
+  background: var(--port-tint);
 }
 
 .port-button.output {
@@ -519,9 +521,14 @@ select:focus {
   width: 9px;
   height: 9px;
   flex: 0 0 auto;
-  border: 2px solid currentColor;
+  border: 2px solid var(--port-color, #64748b);
   border-radius: 50%;
   background: #fff;
+}
+
+.port-button.connected .port-dot {
+  background: var(--port-color, #64748b);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--port-color, #64748b) 18%, #ffffff);
 }
 
 .port-name {
@@ -535,7 +542,7 @@ select:focus {
   padding: 1px 5px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--port-color, #64748b) 13%, #ffffff);
-  color: #334155;
+  color: color-mix(in srgb, var(--port-color, #64748b) 76%, #0f172a);
   font-size: 9px;
   font-weight: 700;
   line-height: 1.4;
@@ -552,9 +559,10 @@ select:focus {
 }
 
 .interface-row .port-button {
-  background: #fff7ed;
-  border-color: #fed7aa;
-  color: #9a3412;
+  background: var(--port-tint);
+  border-color: var(--port-border-soft);
+  border-left-color: var(--port-color, #64748b);
+  color: #223047;
 }
 
 .canvas-status {

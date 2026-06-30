@@ -57,6 +57,8 @@ Each port can carry a `portType`, such as:
 
 Use the device inspector to edit a port's type. Use `Add Type` to add a project-specific custom port type. Custom port types are saved inside the `.labwire.json` project file.
 
+Port chips are color-coded by `portType`. Empty port circles mean the port is unused; solid port circles mean the port already appears in at least one connection.
+
 ## AI View And Code View
 
 The lower-right panel has two modes:

@@ -439,6 +439,13 @@ function portTypeColor(project, portTypeId) {
   return getPortType(project, portTypeId)?.color || "#64748b";
 }
 
+function isPortConnected(deviceId, portId) {
+  return state.project.connections.some((connection) => (
+    (connection.from.deviceId === deviceId && connection.from.portId === portId)
+    || (connection.to.deviceId === deviceId && connection.to.portId === portId)
+  ));
+}
+
 const els = {
   fileStatus: $("#fileStatus"),
   newProjectBtn: $("#newProjectBtn"),
@@ -1064,6 +1071,7 @@ function makeConnectionPath(from, to, laneOffset = 0, obstacles = []) {
 
 function portButtonHtml(port) {
   const pending = state.pendingPort?.portId === port.id ? "pending" : "";
+  const connected = isPortConnected(state.renderingDeviceId, port.id) ? "connected" : "";
   const typeName = portTypeLabel(state.project, port.portType);
   const typeColor = portTypeColor(state.project, port.portType);
   const dot = '<span class="port-dot"></span>';
@@ -1071,7 +1079,7 @@ function portButtonHtml(port) {
   const badge = `<span class="port-type-badge">${escapeHtml(typeName)}</span>`;
   const inner = port.direction === "output" ? `${badge}${label}${dot}` : `${dot}${label}${badge}`;
   return `
-    <button class="port-button ${port.direction} ${pending}" type="button"
+    <button class="port-button ${port.direction} ${pending} ${connected}" type="button"
       data-device-id="${escapeHtml(state.renderingDeviceId)}"
       data-port-id="${escapeHtml(port.id)}"
       style="--port-color:${escapeHtml(typeColor)}"
