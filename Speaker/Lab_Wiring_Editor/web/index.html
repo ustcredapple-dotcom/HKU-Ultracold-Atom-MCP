@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab Wiring Editor</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="app-topbar">
+      <div class="brand">
+        <div class="brand-mark">LW</div>
+        <div>
+          <h1>Lab Wiring Editor</h1>
+          <p id="fileStatus">Untitled lab wiring</p>
+        </div>
+      </div>
+      <nav class="toolbar" aria-label="Project actions">
+        <button id="newProjectBtn" type="button" title="New project">New</button>
+        <button id="openProjectBtn" type="button" title="Open .labwire.json">Open</button>
+        <button id="saveProjectBtn" type="button" title="Save current project">Save</button>
+        <button id="saveAsProjectBtn" type="button" title="Save as new project">Save As</button>
+        <button id="loadExampleBtn" type="button" title="Load example">Example</button>
+        <button id="validateBtn" type="button" title="Validate project">Validate</button>
+      </nav>
+    </header>
+
+    <main class="app-shell">
+      <aside class="left-panel">
+        <section class="panel-section">
+          <div class="section-title">
+            <h2>Project</h2>
+          </div>
+          <label class="field">
+            <span>Title</span>
+            <input id="projectTitleInput" type="text" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Description</span>
+            <textarea id="projectDescriptionInput" rows="4"></textarea>
+          </label>
+        </section>
+
+        <section class="panel-section">
+          <div class="section-title">
+            <h2>Devices</h2>
+            <button id="addDeviceBtn" type="button" class="primary">Add</button>
+          </div>
+          <label class="field">
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="Device, port, signal..." autocomplete="off">
+          </label>
+          <div id="deviceList" class="device-list"></div>
+        </section>
+
+        <section class="panel-section compact">
+          <div class="section-title">
+            <h2>Canvas</h2>
+          </div>
+          <div class="segmented">
+            <button id="zoomOutBtn" type="button">-</button>
+            <button id="zoomResetBtn" type="button">100%</button>
+            <button id="zoomInBtn" type="button">+</button>
+          </div>
+          <p class="hint">Drag devices by their header. Drag empty canvas to pan.</p>
+        </section>
+      </aside>
+
+      <section class="canvas-panel" aria-label="Wiring canvas">
+        <div id="canvasViewport" class="canvas-viewport">
+          <div id="world" class="world">
+            <svg id="connectionLayer" class="connection-layer" width="5200" height="3400" viewBox="0 0 5200 3400" aria-hidden="true"></svg>
+            <div id="deviceLayer" class="device-layer"></div>
+          </div>
+        </div>
+        <div class="canvas-status">
+          <span id="interactionStatus">Click a port, then click another port to create a connection.</span>
+          <span id="zoomStatus">100%</span>
+        </div>
+      </section>
+
+      <aside class="right-panel">
+        <section class="panel-section">
+          <div class="section-title">
+            <h2>Inspector</h2>
+          </div>
+          <div id="inspector"></div>
+        </section>
+
+        <section class="panel-section">
+          <div class="section-title">
+            <h2>AI View</h2>
+            <button id="copySummaryBtn" type="button">Copy</button>
+          </div>
+          <textarea id="summaryOutput" rows="10" readonly></textarea>
+        </section>
+      </aside>
+    </main>
+
+    <dialog id="deviceDialog" class="modal">
+      <form method="dialog" id="deviceForm">
+        <header>
+          <h2>Add Device Block</h2>
+          <button value="cancel" type="submit" class="icon-button" title="Close">x</button>
+        </header>
+        <div class="modal-grid">
+          <label class="field">
+            <span>Name</span>
+            <input name="name" type="text" value="New instrument" required>
+          </label>
+          <label class="field">
+            <span>Kind</span>
+            <select name="kind">
+              <option value="instrument">Instrument</option>
+              <option value="control_system">Control system</option>
+              <option value="laser">Laser</option>
+              <option value="optical_component">Optical component</option>
+              <option value="electronics">Electronics</option>
+              <option value="vacuum">Vacuum component</option>
+              <option value="computer">Computer/server</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Interfaces</span>
+            <input name="genericCount" type="number" min="0" max="64" value="0">
+          </label>
+          <label class="field">
+            <span>Inputs</span>
+            <input name="inputCount" type="number" min="0" max="64" value="2">
+          </label>
+          <label class="field">
+            <span>Outputs</span>
+            <input name="outputCount" type="number" min="0" max="64" value="2">
+          </label>
+          <label class="field">
+            <span>Location</span>
+            <input name="location" type="text" placeholder="rack, optical table, shelf...">
+          </label>
+          <label class="field wide">
+            <span>Notes</span>
+            <textarea name="notes" rows="3"></textarea>
+          </label>
+        </div>
+        <footer>
+          <button value="cancel" type="submit">Cancel</button>
+          <button id="createDeviceBtn" value="default" type="submit" class="primary">Create</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="connectionDialog" class="modal narrow">
+      <form method="dialog" id="connectionForm">
+        <header>
+          <h2>Create Connection</h2>
+          <button value="cancel" type="submit" class="icon-button" title="Close">x</button>
+        </header>
+        <div class="connection-endpoints" id="connectionEndpoints"></div>
+        <label class="field">
+          <span>Line type</span>
+          <select name="cableType" id="cableTypeSelect"></select>
+        </label>
+        <label class="field">
+          <span>Label</span>
+          <input name="label" type="text" placeholder="TTL trigger, RF, 780 nm beam...">
+        </label>
+        <label class="field">
+          <span>Signal type</span>
+          <input name="signalType" type="text" placeholder="TTL, analog, optical, RF...">
+        </label>
+        <label class="field">
+          <span>Notes</span>
+          <textarea name="notes" rows="3"></textarea>
+        </label>
+        <footer>
+          <button value="cancel" type="submit">Cancel</button>
+          <button id="createConnectionBtn" value="default" type="submit" class="primary">Connect</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <input id="fallbackFileInput" type="file" accept=".json,.labwire.json,application/json" hidden>
+    <div id="toast" class="toast" role="status"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

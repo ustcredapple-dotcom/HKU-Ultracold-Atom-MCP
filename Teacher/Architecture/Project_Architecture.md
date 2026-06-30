@@ -73,3 +73,19 @@ Worker/Artiq_Project
 3. 光路与接线的 `linker` 子项目。
 4. `Safer` 的危险动作白名单/黑名单。
 5. `Worker` 工具的本地配置模板和 git 忽略规则。
+
+## 已建立的 linker/Speaker 协作模式
+
+2026-06-30 已建立第一版实验室接线连接器:
+
+```text
+linker/Lab_Wiring_Connector
+Speaker/Lab_Wiring_Editor
+```
+
+职责边界:
+
+- `linker/Lab_Wiring_Connector`: 定义工程文件格式、schema、校验和 AI 摘要。它是 HKU_Ultracold_Agent_Architect 与现实接线关系链接的引擎。
+- `Speaker/Lab_Wiring_Editor`: 提供人类可操作网页，调用 linker 引擎，输入和输出 `.labwire.json` 工程文件。
+
+这确立了后续 linker 工具的一条原则: 现实世界知识进入 linker，交互展示和人工编辑入口放在 Speaker。

@@ -19,4 +19,13 @@ Worker/Artiq_Project
 - `remote`: 通过 SSH/SCP 或 `artiq_client` 远程控制 Linux 工控机上的 ARTIQ。
 - `observer/moku`: Moku:Go API、MokuCLI、设备发现和只读示波器测试工具。
 
+当前第一批 linker/Speaker 工具:
+
+```text
+linker/Lab_Wiring_Connector
+Speaker/Lab_Wiring_Editor
+```
+
+用于创建 AI 可读的实验室接线工程文件，并通过网页编辑器新增器件、命名接口、连接端口、保存和重新打开工程。
+
 敏感信息位于 `Key`，默认不应提交到 git。

@@ -1,0 +1,87 @@
+{
+  "kind": "hku.ultracold.lab_wiring_project",
+  "schemaVersion": 1,
+  "metadata": {
+    "projectId": "labwire_example",
+    "title": "Example ultracold lab wiring",
+    "description": "A small example showing how AI-readable device, port, and connection data is stored.",
+    "author": "HKU Ultracold Agent Architect",
+    "tags": [
+      "example",
+      "wiring"
+    ],
+    "createdAt": "2026-06-30T00:00:00.000Z",
+    "updatedAt": "2026-06-30T00:00:00.000Z"
+  },
+  "devices": [
+    {
+      "id": "device_artiq_kasli",
+      "name": "ARTIQ Kasli",
+      "kind": "control_system",
+      "manufacturer": "M-Labs",
+      "model": "Kasli",
+      "serialNumber": "",
+      "location": "main rack",
+      "notes": "Example control hardware.",
+      "position": { "x": 120, "y": 120 },
+      "size": { "width": 260, "height": 170 },
+      "ports": [
+        {
+          "id": "port_ttl0",
+          "name": "TTL0",
+          "direction": "output",
+          "signalType": "TTL trigger",
+          "medium": "electrical",
+          "connectorType": "SMA",
+          "notes": "Example digital trigger output."
+        }
+      ]
+    },
+    {
+      "id": "device_moku_go",
+      "name": "Moku:Go",
+      "kind": "instrument",
+      "manufacturer": "Liquid Instruments",
+      "model": "Moku:Go",
+      "serialNumber": "",
+      "location": "optics table",
+      "notes": "Example observer instrument.",
+      "position": { "x": 520, "y": 170 },
+      "size": { "width": 260, "height": 170 },
+      "ports": [
+        {
+          "id": "port_trigger_in",
+          "name": "Trigger In",
+          "direction": "input",
+          "signalType": "TTL trigger",
+          "medium": "electrical",
+          "connectorType": "BNC",
+          "notes": "Example trigger input."
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "connection_artiq_to_moku_trigger",
+      "name": "ARTIQ trigger to Moku",
+      "from": {
+        "deviceId": "device_artiq_kasli",
+        "portId": "port_ttl0"
+      },
+      "to": {
+        "deviceId": "device_moku_go",
+        "portId": "port_trigger_in"
+      },
+      "cableType": "ttl",
+      "signalType": "TTL trigger",
+      "color": "#16a34a",
+      "label": "TTL trigger",
+      "notes": "Example wiring only. Confirm voltage, impedance, and physical cable before using in the lab."
+    }
+  ],
+  "canvas": {
+    "zoom": 1,
+    "pan": { "x": 0, "y": 0 }
+  }
+}

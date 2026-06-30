@@ -11,9 +11,10 @@
 1. 先读本文件，理解项目目录角色和当前状态。
 2. 读 `Teacher/Architecture/Project_Architecture.md`，理解总体架构。
 3. 读 `Teacher/Subprojects/Artiq_Project_Migration.md`，理解第一批已迁移工具。
-4. 读 `Teacher/Environment_Setup/ARTIQ_Moku_Setup.md`，理解 ARTIQ 与 Moku:Go 的环境配置方式。
-5. 再去 `Worker/Artiq_Project` 阅读实际工具代码和 README。
-6. 如果需要了解历史决策，读 `History/Chat_History` 和 `History/Construction_Log`。
+4. 读 `Teacher/Subprojects/Lab_Wiring_Connector.md`，理解实验室接线工程文件和网页编辑器。
+5. 读 `Teacher/Environment_Setup/ARTIQ_Moku_Setup.md`，理解 ARTIQ 与 Moku:Go 的环境配置方式。
+6. 再去 `Worker/Artiq_Project`、`linker/Lab_Wiring_Connector` 和 `Speaker/Lab_Wiring_Editor` 阅读实际工具代码和 README。
+7. 如果需要了解历史决策，读 `History/Chat_History` 和 `History/Construction_Log`。
 
 ## 目录角色
 
@@ -40,6 +41,11 @@ Z:\Wang Junjie\HKU_Ultracold_Agent_Architect\Worker\Artiq_Project
 
 - `remote`: 通过 SSH/SCP 或 `artiq_client` 远程控制 Linux 工控机上的 ARTIQ。
 - `observer/moku`: Moku:Go 的 API、MokuCLI、设备发现、离线安装包和只读示波器测试工具。
+
+已建立第一版实验室接线连接器:
+
+- `linker/Lab_Wiring_Connector`: 接线工程文件格式、schema、校验和 AI 摘要。
+- `Speaker/Lab_Wiring_Editor`: 人类可交互网页，调用 linker 引擎，读写 `.labwire.json`。
 
 ## 安全工作原则
 

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ustcredapple-dotcom/HKU-Ultracold-Atom-MCP/schema/lab_wiring_project.schema.json",
+  "title": "HKU Ultracold Lab Wiring Project",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "metadata", "devices", "connections"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "hku.ultracold.lab_wiring_project"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["title", "createdAt", "updatedAt"],
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "author": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "projectId": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "devices": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/device" }
+    },
+    "connections": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/connection" }
+    },
+    "canvas": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "zoom": { "type": "number" },
+        "pan": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "device": {
+      "type": "object",
+      "required": ["id", "name", "ports", "position"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "kind": { "type": "string" },
+        "manufacturer": { "type": "string" },
+        "model": { "type": "string" },
+        "serialNumber": { "type": "string" },
+        "location": { "type": "string" },
+        "notes": { "type": "string" },
+        "position": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" }
+          }
+        },
+        "size": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "number" },
+            "height": { "type": "number" }
+          }
+        },
+        "ports": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/port" }
+        }
+      }
+    },
+    "port": {
+      "type": "object",
+      "required": ["id", "name", "direction"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "direction": {
+          "enum": ["input", "output", "bidirectional"]
+        },
+        "signalType": { "type": "string" },
+        "medium": { "type": "string" },
+        "connectorType": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "connection": {
+      "type": "object",
+      "required": ["id", "from", "to", "cableType"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "from": { "$ref": "#/$defs/endpoint" },
+        "to": { "$ref": "#/$defs/endpoint" },
+        "cableType": { "type": "string" },
+        "signalType": { "type": "string" },
+        "color": { "type": "string" },
+        "label": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "endpoint": {
+      "type": "object",
+      "required": ["deviceId", "portId"],
+      "additionalProperties": false,
+      "properties": {
+        "deviceId": { "type": "string" },
+        "portId": { "type": "string" }
+      }
+    }
+  }
+}
