@@ -90,6 +90,8 @@ Use `Arrange` in the top toolbar to automatically organize devices. The editor p
 
 Connections are drawn as clean rounded orthogonal lines with a subtle white backing stroke for readability. When a device sits under a bottom-facing port, the router steps sideways before entering the main line path so arranged diagrams do not put a block directly on top of a wire.
 
+Connection endpoints are anchored to the actual visible port circle, not just to the device block. This is important for dense instruments such as ARTIQ where adjacent ports can be easy to confuse.
+
 Use the mouse wheel over the canvas to zoom around the cursor position. The `-` and `+` buttons still provide fixed-step zoom controls.
 
 ## Project Files
@@ -148,3 +150,5 @@ linker/Lab_Wiring_Connector/projects/Actual_Lab_Wiring/versions
 Click an existing line to select it. The right inspector lets you edit its name, label, line type, signal type, notes, or delete it.
 
 After selection, a small quick-action panel also appears near the clicked line so you can directly change the line type or delete the connection from the canvas.
+
+Connections are displayed as undirected physical links. The project JSON still stores two endpoint fields named `from` and `to` for compatibility, but the editor labels them as Port A and Port B and summaries use `--` instead of an arrow.

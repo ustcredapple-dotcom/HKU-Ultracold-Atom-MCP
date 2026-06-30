@@ -53,6 +53,8 @@ Core sections:
 
 Built-in port types include TTL, DAC, ADC, RF, Analog, Digital, Laser, Camera image/photo, Optical, Ethernet, USB, Power, and Custom. Users may add custom types, which are stored in the project file.
 
+Connections should be interpreted as undirected physical links between two named ports. The JSON fields remain `from` and `to` for schema stability, but UI and summaries present them as Port A and Port B with `--`.
+
 ## Actual Lab State
 
 `Speaker/Lab_Wiring_Editor` exposes three actual-lab operations backed by the local server:

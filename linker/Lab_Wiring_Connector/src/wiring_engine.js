@@ -386,7 +386,7 @@ export function summarizeProject(project) {
     const from = describeEndpoint(project, connection.from);
     const to = describeEndpoint(project, connection.to);
     const label = connection.label || connection.name || connection.cableType;
-    lines.push(`- ${label}: ${from.deviceName}.${from.portName} -> ${to.deviceName}.${to.portName} (${connection.cableType})`);
+    lines.push(`- ${label}: ${from.deviceName}.${from.portName} -- ${to.deviceName}.${to.portName} (${connection.cableType})`);
   }
   return lines.join("\n");
 }

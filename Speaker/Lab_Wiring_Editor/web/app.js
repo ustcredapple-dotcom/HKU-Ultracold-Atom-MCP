@@ -133,8 +133,8 @@ const translations = {
     directionTitle: "Direction",
     signalPlaceholderShort: "signal",
     connectorPlaceholder: "connector",
-    from: "From",
-    to: "To",
+    from: "Port A",
+    to: "Port B",
     connectionSelected: "Connection selected.",
     selectedPort: "Selected {device} / {port}. Click another port to connect.",
     portSelectionCleared: "Port selection cleared.",
@@ -173,7 +173,7 @@ const translations = {
     summaryConnections: "Connections",
     summaryDeviceLine: "- {name} ({kind}, id={id})",
     summaryPortLine: "  - {name} [{details}]",
-    summaryConnectionLine: "- {label}: {fromDevice}.{fromPort} -> {toDevice}.{toPort} ({cable})",
+    summaryConnectionLine: "- {label}: {fromDevice}.{fromPort} -- {toDevice}.{toPort} ({cable})",
     portDetailsFallback: "port",
     portTypeTtl: "TTL",
     portTypeDac: "DAC",
@@ -306,8 +306,8 @@ const translations = {
     directionTitle: "方向",
     signalPlaceholderShort: "信号",
     connectorPlaceholder: "接头",
-    from: "起点",
-    to: "终点",
+    from: "接口 A",
+    to: "接口 B",
     connectionSelected: "已选中连接。",
     selectedPort: "已选中 {device} / {port}。请点击另一个接口来连接。",
     portSelectionCleared: "已清除接口选择。",
@@ -346,7 +346,7 @@ const translations = {
     summaryConnections: "连接",
     summaryDeviceLine: "- {name}（{kind}，id={id}）",
     summaryPortLine: "  - {name} [{details}]",
-    summaryConnectionLine: "- {label}: {fromDevice}.{fromPort} -> {toDevice}.{toPort}（{cable}）",
+    summaryConnectionLine: "- {label}: {fromDevice}.{fromPort} -- {toDevice}.{toPort}（{cable}）",
     portDetailsFallback: "接口",
     portTypeTtl: "TTL",
     portTypeDac: "DAC",
@@ -864,7 +864,7 @@ function ensureDeviceSize(device) {
   device.size.height = Math.max(Number(device.size.height || 150), requiredHeight);
 }
 
-function endpointPosition(endpoint) {
+function fallbackEndpointPosition(endpoint) {
   const device = state.project.devices.find((item) => item.id === endpoint.deviceId);
   if (!device) return { x: 0, y: 0, side: "right" };
   ensureDeviceSize(device);
@@ -891,6 +891,49 @@ function endpointPosition(endpoint) {
     y: device.position.y + height,
     side: "bottom"
   };
+}
+
+function nearestDeviceSide(point, rect) {
+  const distances = [
+    ["left", Math.abs(point.x - rect.left)],
+    ["right", Math.abs(point.x - rect.right)],
+    ["bottom", Math.abs(point.y - rect.bottom)]
+  ];
+  distances.sort((a, b) => a[1] - b[1]);
+  return distances[0][0];
+}
+
+function endpointPositionFromDom(endpoint) {
+  const button = els.deviceLayer.querySelector(
+    `.port-button[data-device-id="${CSS.escape(endpoint.deviceId)}"][data-port-id="${CSS.escape(endpoint.portId)}"]`
+  );
+  const dot = button?.querySelector(".port-dot");
+  const deviceNode = els.deviceLayer.querySelector(`[data-device-id="${CSS.escape(endpoint.deviceId)}"]`);
+  if (!dot || !deviceNode) return null;
+
+  const device = state.project.devices.find((item) => item.id === endpoint.deviceId);
+  const port = device?.ports?.find((item) => item.id === endpoint.portId);
+  const dotRect = dot.getBoundingClientRect();
+  const nodeRect = deviceNode.getBoundingClientRect();
+  const point = screenToWorld(dotRect.left + dotRect.width / 2, dotRect.top + dotRect.height / 2);
+  const nodeTopLeft = screenToWorld(nodeRect.left, nodeRect.top);
+  const nodeBottomRight = screenToWorld(nodeRect.right, nodeRect.bottom);
+  const nodeWorldRect = {
+    left: nodeTopLeft.x,
+    top: nodeTopLeft.y,
+    right: nodeBottomRight.x,
+    bottom: nodeBottomRight.y
+  };
+  const side = port?.direction === "output"
+    ? "right"
+    : port?.direction === "input"
+      ? "left"
+      : nearestDeviceSide(point, nodeWorldRect);
+  return { x: point.x, y: point.y, side };
+}
+
+function endpointPosition(endpoint) {
+  return endpointPositionFromDom(endpoint) || fallbackEndpointPosition(endpoint);
 }
 
 function roundedPolylinePath(points, radius = 14) {
@@ -1517,13 +1560,13 @@ function render() {
   }
   els.projectTitleInput.value = state.project.metadata.title || "";
   els.projectDescriptionInput.value = state.project.metadata.description || "";
-  renderConnections();
   renderDeviceLayer();
+  applyWorldTransform();
+  renderConnections();
   renderDeviceList();
   renderInspector();
   renderSummary();
   renderActualVersionSelect();
-  applyWorldTransform();
 }
 
 function selectDevice(deviceId) {
@@ -1637,12 +1680,12 @@ function onPointerMove(event) {
     const point = screenToWorld(event.clientX, event.clientY);
     device.position.x = Math.max(0, Math.round(point.x - state.drag.offsetX));
     device.position.y = Math.max(0, Math.round(point.y - state.drag.offsetY));
-    renderConnections();
     const node = els.deviceLayer.querySelector(`[data-device-id="${CSS.escape(device.id)}"]`);
     if (node) {
       node.style.left = `${device.position.x}px`;
       node.style.top = `${device.position.y}px`;
     }
+    renderConnections();
     state.dirty = true;
     updateStatus();
   }
