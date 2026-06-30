@@ -1,0 +1,45 @@
+# Secrets and local credentials
+Key/
+*.key
+*.pem
+*.p12
+*.pfx
+*.token
+*token*.txt
+*password*.txt
+*secret*.txt
+
+# Local experiment configuration
+config.local.json
+moku_config.local.json
+*.local.json
+*.local.yaml
+*.local.yml
+*.local.toml
+*.local.ini
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Runtime output
+logs/
+run_outputs/
+artiq_remote_jobs/
+*.h5
+*.hdf5
+*.npy
+*.npz
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

@@ -1,0 +1,13 @@
+* text=auto
+
+*.md text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+*.whl binary
+*.tar.gz binary
+*.exe binary
