@@ -1,0 +1,731 @@
+{
+  "kind": "hku.ultracold.lab_wiring_project",
+  "schemaVersion": 1,
+  "metadata": {
+    "projectId": "labwire_d6611887",
+    "title": "ZZLab",
+    "description": "",
+    "author": "",
+    "tags": [],
+    "createdAt": "2026-06-30T11:26:38.781Z",
+    "updatedAt": "2026-06-30T11:30:54.501Z"
+  },
+  "portTypes": [
+    {
+      "name": "TTL",
+      "color": "#15803d",
+      "description": "Digital trigger/control port.",
+      "builtin": true,
+      "id": "ttl"
+    },
+    {
+      "name": "DAC",
+      "color": "#2563eb",
+      "description": "Digital-to-analog output.",
+      "builtin": true,
+      "id": "dac"
+    },
+    {
+      "name": "ADC",
+      "color": "#0284c7",
+      "description": "Analog-to-digital input.",
+      "builtin": true,
+      "id": "adc"
+    },
+    {
+      "name": "RF",
+      "color": "#dc2626",
+      "description": "Radio-frequency signal port.",
+      "builtin": true,
+      "id": "rf"
+    },
+    {
+      "name": "Analog",
+      "color": "#7c3aed",
+      "description": "General analog signal port.",
+      "builtin": true,
+      "id": "analog"
+    },
+    {
+      "name": "Digital",
+      "color": "#16a34a",
+      "description": "General digital signal port.",
+      "builtin": true,
+      "id": "digital"
+    },
+    {
+      "name": "Laser",
+      "color": "#f97316",
+      "description": "Laser beam or laser-control topology port.",
+      "builtin": true,
+      "id": "laser"
+    },
+    {
+      "name": "Camera image",
+      "color": "#0891b2",
+      "description": "Camera frame, photo, or image-data topology port.",
+      "builtin": true,
+      "id": "camera_image"
+    },
+    {
+      "name": "Optical",
+      "color": "#ea580c",
+      "description": "Optical beam or fiber interface.",
+      "builtin": true,
+      "id": "optical"
+    },
+    {
+      "name": "Ethernet",
+      "color": "#0f766e",
+      "description": "Network interface.",
+      "builtin": true,
+      "id": "ethernet"
+    },
+    {
+      "name": "USB",
+      "color": "#475569",
+      "description": "USB interface.",
+      "builtin": true,
+      "id": "usb"
+    },
+    {
+      "name": "Power",
+      "color": "#111827",
+      "description": "Power input or output.",
+      "builtin": true,
+      "id": "power"
+    },
+    {
+      "name": "Custom",
+      "color": "#64748b",
+      "description": "User-defined or unspecified port type.",
+      "builtin": true,
+      "id": "custom"
+    }
+  ],
+  "devices": [
+    {
+      "id": "device_383f10e9",
+      "name": "Moku_Go_1",
+      "kind": "instrument",
+      "manufacturer": "",
+      "model": "",
+      "serialNumber": "",
+      "location": "",
+      "notes": "",
+      "position": {
+        "x": 119,
+        "y": 569
+      },
+      "size": {
+        "width": 240,
+        "height": 176
+      },
+      "ports": [
+        {
+          "id": "port_93ec1b56",
+          "name": "输入 1",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_17927b00",
+          "name": "输入 2",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_6e4ec556",
+          "name": "输出 1",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_6df4012e",
+          "name": "输出 2",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "device_2106f3a4",
+      "name": "Artiq",
+      "kind": "instrument",
+      "manufacturer": "",
+      "model": "",
+      "serialNumber": "",
+      "location": "",
+      "notes": "",
+      "position": {
+        "x": 940,
+        "y": 120
+      },
+      "size": {
+        "width": 240,
+        "height": 875
+      },
+      "ports": [
+        {
+          "id": "port_8b5e62a6",
+          "name": "输入 1",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_a4ab4ece",
+          "name": "输入 2",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_8293884d",
+          "name": "输入 3",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_fd0fe1d0",
+          "name": "输入 4",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_07c6bf79",
+          "name": "输入 5",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_f95fff32",
+          "name": "输入 6",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_2ec5eb7a",
+          "name": "输入 7",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_ea0060b8",
+          "name": "输入 8",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_6c2d3ce1",
+          "name": "输出 1",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_1c97ef6c",
+          "name": "输出 2",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_06ba8e48",
+          "name": "输出 3",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_63571f96",
+          "name": "输出 4",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_e1bd7216",
+          "name": "输出 5",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_9735e917",
+          "name": "输出 6",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_e5d83bde",
+          "name": "输出 7",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_064b90c1",
+          "name": "输出 8",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_2d4ee167",
+          "name": "输出 9",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_1383c89f",
+          "name": "输出 10",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_2fe22822",
+          "name": "输出 11",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_d2466f5d",
+          "name": "输出 12",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_4eed013e",
+          "name": "输出 13",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_9e65a0f4",
+          "name": "输出 14",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_8a3657ae",
+          "name": "输出 15",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_74cc48b9",
+          "name": "输出 16",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_69509060",
+          "name": "输出 17",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_1416e704",
+          "name": "输出 18",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_0017e8b5",
+          "name": "输出 19",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_26e8f7db",
+          "name": "输出 20",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_65006069",
+          "name": "输出 21",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_a98eb146",
+          "name": "输出 22",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_e8940edb",
+          "name": "输出 23",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_4f069a2d",
+          "name": "输出 24",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_57ca5fc2",
+          "name": "新接口",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "device_57b67c7a",
+      "name": "Linux_Computer",
+      "kind": "instrument",
+      "manufacturer": "",
+      "model": "",
+      "serialNumber": "",
+      "location": "",
+      "notes": "",
+      "position": {
+        "x": 120,
+        "y": 120
+      },
+      "size": {
+        "width": 240,
+        "height": 198
+      },
+      "ports": [
+        {
+          "id": "port_1b925eaa",
+          "name": "通用接口 1",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_d9beff55",
+          "name": "输入 1",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_462334ac",
+          "name": "输入 2",
+          "direction": "input",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_82da1801",
+          "name": "输出 1",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_76f7f29a",
+          "name": "输出 2",
+          "direction": "output",
+          "portType": "custom",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "device_195bbbdf",
+      "name": "Router",
+      "kind": "instrument",
+      "manufacturer": "",
+      "model": "",
+      "serialNumber": "",
+      "location": "",
+      "notes": "",
+      "position": {
+        "x": 530,
+        "y": 120
+      },
+      "size": {
+        "width": 240,
+        "height": 264
+      },
+      "ports": [
+        {
+          "id": "port_8641999f",
+          "name": "通用接口 1",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_1c13bbb4",
+          "name": "通用接口 2",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_da1b1b24",
+          "name": "通用接口 3",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_4adc8f0a",
+          "name": "通用接口 4",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_f5e8abc9",
+          "name": "通用接口 5",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_a36d8c64",
+          "name": "通用接口 6",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_ab1d9b96",
+          "name": "通用接口 7",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        },
+        {
+          "id": "port_cd76459d",
+          "name": "通用接口 8",
+          "direction": "bidirectional",
+          "portType": "ethernet",
+          "signalType": "",
+          "medium": "",
+          "connectorType": "",
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "connection_72a7becc",
+      "name": "",
+      "from": {
+        "deviceId": "device_57b67c7a",
+        "portId": "port_1b925eaa"
+      },
+      "to": {
+        "deviceId": "device_195bbbdf",
+        "portId": "port_8641999f"
+      },
+      "cableType": "ethernet",
+      "signalType": "",
+      "color": "#0f766e",
+      "label": "",
+      "notes": ""
+    },
+    {
+      "id": "connection_8824b408",
+      "name": "",
+      "from": {
+        "deviceId": "device_195bbbdf",
+        "portId": "port_8641999f"
+      },
+      "to": {
+        "deviceId": "device_2106f3a4",
+        "portId": "port_57ca5fc2"
+      },
+      "cableType": "ethernet",
+      "signalType": "",
+      "color": "#0f766e",
+      "label": "",
+      "notes": ""
+    }
+  ],
+  "canvas": {
+    "zoom": 0.8620689655172414,
+    "pan": {
+      "x": 30,
+      "y": 30
+    }
+  }
+}

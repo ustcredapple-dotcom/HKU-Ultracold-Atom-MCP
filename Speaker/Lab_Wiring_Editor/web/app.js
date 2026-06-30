@@ -21,6 +21,7 @@ const svgNS = "http://www.w3.org/2000/svg";
 const LANGUAGE_STORAGE_KEY = "hku.labWiringEditor.language";
 const BACKUP_ENDPOINT = "/api/lab-wiring/backups";
 const DEFAULT_PROJECT_ENDPOINT = "/api/lab-wiring/projects/default";
+const ACTUAL_LAB_ENDPOINT = "/api/lab-wiring/actual";
 const AUTO_SAVE_INTERVAL_MS = 60_000;
 
 const translations = {
@@ -37,6 +38,19 @@ const translations = {
     saveTitle: "Save current project. Unsaved projects go to the default project folder.",
     saveAs: "Save As",
     saveAsTitle: "Save as new project",
+    loadActual: "Load Lab",
+    loadActualTitle: "Read the actual lab wiring state",
+    publishActual: "Update Lab",
+    publishActualTitle: "Update the actual lab wiring state with this project",
+    rollbackActual: "Rollback",
+    rollbackActualTitle: "Rollback actual lab wiring to the selected version",
+    actualVersionPlaceholder: "Lab versions",
+    actualLoaded: "Actual lab wiring loaded: {file}",
+    actualUpdated: "Actual lab wiring updated: {file}",
+    actualRolledBack: "Actual lab wiring rolled back to {version}",
+    actualUnavailable: "Actual lab wiring library is unavailable. Start the Lab Wiring Editor launcher.",
+    noActualVersions: "No actual lab wiring versions yet.",
+    rollbackConfirm: "Rollback actual lab wiring to selected version?",
     example: "Example",
     exampleTitle: "Load example",
     validate: "Validate",
@@ -197,6 +211,19 @@ const translations = {
     saveTitle: "保存当前工程。未另存的工程会保存到默认工程文件夹。",
     saveAs: "另存为",
     saveAsTitle: "另存为新工程",
+    loadActual: "读取现状",
+    loadActualTitle: "读取实验室当前连线情况",
+    publishActual: "更新现状",
+    publishActualTitle: "用当前工程更新实验室当前连线情况",
+    rollbackActual: "回滚",
+    rollbackActualTitle: "把实验室当前连线回滚到所选版本",
+    actualVersionPlaceholder: "现状版本",
+    actualLoaded: "已读取实验室当前连线: {file}",
+    actualUpdated: "已更新实验室当前连线: {file}",
+    actualRolledBack: "实验室当前连线已回滚到 {version}",
+    actualUnavailable: "实验室当前连线版本库不可用。请用 Lab Wiring Editor 启动脚本打开网页。",
+    noActualVersions: "还没有实验室当前连线版本。",
+    rollbackConfirm: "确认把实验室当前连线回滚到所选版本？",
     example: "示例",
     exampleTitle: "加载示例",
     validate: "校验",
@@ -418,6 +445,10 @@ const els = {
   openProjectBtn: $("#openProjectBtn"),
   saveProjectBtn: $("#saveProjectBtn"),
   saveAsProjectBtn: $("#saveAsProjectBtn"),
+  loadActualBtn: $("#loadActualBtn"),
+  publishActualBtn: $("#publishActualBtn"),
+  actualVersionSelect: $("#actualVersionSelect"),
+  rollbackActualBtn: $("#rollbackActualBtn"),
   loadExampleBtn: $("#loadExampleBtn"),
   validateBtn: $("#validateBtn"),
   arrangeBtn: $("#arrangeBtn"),
@@ -480,6 +511,8 @@ const state = {
   lastAutoSaveText: "",
   defaultProjectFileName: "",
   defaultProjectPath: "",
+  actualLabFileName: "ZZLab.labwire.json",
+  actualLabVersions: [],
   backupWarningShown: false
 };
 
@@ -517,6 +550,9 @@ function applyStaticTranslations() {
     ["#openProjectBtn", "open", "openTitle"],
     ["#saveProjectBtn", "save", "saveTitle"],
     ["#saveAsProjectBtn", "saveAs", "saveAsTitle"],
+    ["#loadActualBtn", "loadActual", "loadActualTitle"],
+    ["#publishActualBtn", "publishActual", "publishActualTitle"],
+    ["#rollbackActualBtn", "rollbackActual", "rollbackActualTitle"],
     ["#loadExampleBtn", "example", "exampleTitle"],
     ["#validateBtn", "validate", "validateTitle"],
     ["#arrangeBtn", "arrange", "arrangeTitle"],
@@ -534,6 +570,7 @@ function applyStaticTranslations() {
     if (titleKey) setElementTitle(selector, titleKey);
   }
   setElementTitle("#autoSaveToggleBtn", "autoSaveTitle");
+  setElementTitle("#actualVersionSelect", "actualVersionPlaceholder");
 
   const headings = [
     [".left-panel .panel-section:nth-of-type(1) h2", "project"],
@@ -696,6 +733,25 @@ function updateAutoSaveButton() {
   els.autoSaveToggleBtn.textContent = t(state.autoSaveEnabled ? "autoSaveOn" : "autoSaveOff");
   els.autoSaveToggleBtn.classList.toggle("active", state.autoSaveEnabled);
   els.autoSaveToggleBtn.setAttribute("aria-pressed", String(state.autoSaveEnabled));
+}
+
+function renderActualVersionSelect() {
+  if (!els.actualVersionSelect) return;
+  const versions = [...(state.actualLabVersions || [])].reverse();
+  if (!versions.length) {
+    els.actualVersionSelect.innerHTML = `<option value="">${escapeHtml(t("actualVersionPlaceholder"))}</option>`;
+    els.actualVersionSelect.disabled = true;
+    els.rollbackActualBtn.disabled = true;
+    return;
+  }
+  els.actualVersionSelect.disabled = false;
+  els.rollbackActualBtn.disabled = false;
+  els.actualVersionSelect.innerHTML = versions
+    .map((version) => {
+      const label = `${version.timestamp || ""} / ${version.reason || "version"} / ${version.contentSha256?.slice(0, 8) || ""}`;
+      return `<option value="${escapeHtml(version.versionId)}">${escapeHtml(label)}</option>`;
+    })
+    .join("");
 }
 
 function markDirty() {
@@ -879,11 +935,52 @@ function roundedPolylinePath(points, radius = 14) {
   return parts.join(" ");
 }
 
-function makeConnectionPath(from, to, laneOffset = 0) {
+function segmentIntersectsRect(a, b, rect) {
+  const minX = Math.min(a.x, b.x);
+  const maxX = Math.max(a.x, b.x);
+  const minY = Math.min(a.y, b.y);
+  const maxY = Math.max(a.y, b.y);
+  if (Math.abs(a.y - b.y) < 1) {
+    return a.y >= rect.top && a.y <= rect.bottom && maxX >= rect.left && minX <= rect.right;
+  }
+  if (Math.abs(a.x - b.x) < 1) {
+    return a.x >= rect.left && a.x <= rect.right && maxY >= rect.top && minY <= rect.bottom;
+  }
+  return maxX >= rect.left && minX <= rect.right && maxY >= rect.top && minY <= rect.bottom;
+}
+
+function pathCollides(points, obstacles) {
+  if (!obstacles.length) return false;
+  for (let index = 1; index < points.length; index += 1) {
+    for (const rect of obstacles) {
+      if (segmentIntersectsRect(points[index - 1], points[index], rect)) return true;
+    }
+  }
+  return false;
+}
+
+function connectionObstacles(connection) {
+  const endpointDevices = new Set([connection.from.deviceId, connection.to.deviceId]);
+  return state.project.devices
+    .filter((device) => !endpointDevices.has(device.id))
+    .map((device) => {
+      ensureDeviceSize(device);
+      const padding = 28;
+      return {
+        left: device.position.x - padding,
+        right: device.position.x + (device.size?.width || 240) + padding,
+        top: device.position.y - padding,
+        bottom: device.position.y + (device.size?.height || 150) + padding
+      };
+    });
+}
+
+function makeConnectionPath(from, to, laneOffset = 0, obstacles = []) {
   const sameY = Math.abs(from.y - to.y) < 6;
   const horizontalGap = Math.abs(to.x - from.x);
   if (sameY && horizontalGap > 80) {
-    return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
+    const straight = [{ x: from.x, y: from.y }, { x: to.x, y: to.y }];
+    if (!pathCollides(straight, obstacles)) return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
   }
 
   const preferredGap = Math.max(70, Math.min(180, horizontalGap / 2));
@@ -899,16 +996,70 @@ function makeConnectionPath(from, to, laneOffset = 0) {
     x: to.side === "bottom" ? to.x : to.x + toLead,
     y: to.side === "bottom" ? to.y + preferredGap : to.y
   };
-  const midX = Math.round((startLead.x + endLead.x) / 2 + laneOffset);
-  const points = [
-    start,
-    startLead,
-    { x: midX, y: startLead.y },
-    { x: midX, y: endLead.y },
-    endLead,
-    end
+  const bottomLeadVariants = (anchor, side, directLead, primaryDirection) => {
+    if (side !== "bottom") return [[anchor, directLead]];
+    const direction = primaryDirection || 1;
+    const exitY = anchor.y + 34;
+    const sideStep = preferredGap + 70 + Math.abs(laneOffset);
+    return [
+      [anchor, directLead],
+      [
+        anchor,
+        { x: anchor.x, y: exitY },
+        { x: anchor.x + direction * sideStep, y: exitY },
+        { x: anchor.x + direction * sideStep, y: directLead.y }
+      ],
+      [
+        anchor,
+        { x: anchor.x, y: exitY },
+        { x: anchor.x - direction * sideStep, y: exitY },
+        { x: anchor.x - direction * sideStep, y: directLead.y }
+      ]
+    ];
+  };
+  const startVariants = bottomLeadVariants(start, from.side, startLead, from.x <= to.x ? 1 : -1);
+  const endVariants = bottomLeadVariants(end, to.side, endLead, to.x <= from.x ? 1 : -1);
+  const composeMidPath = (startPath, endPath) => {
+    const startAnchor = startPath.at(-1);
+    const endAnchor = endPath.at(-1);
+    const midX = Math.round((startAnchor.x + endAnchor.x) / 2 + laneOffset);
+    return [
+      ...startPath,
+      { x: midX, y: startAnchor.y },
+      { x: midX, y: endAnchor.y },
+      ...[...endPath].reverse()
+    ];
+  };
+  for (const startPath of startVariants) {
+    for (const endPath of endVariants) {
+      const candidate = composeMidPath(startPath, endPath);
+      if (!pathCollides(candidate, obstacles)) return roundedPolylinePath(candidate, 16);
+    }
+  }
+
+  const obstacleBounds = obstacles.length ? {
+    left: Math.min(...obstacles.map((rect) => rect.left)),
+    right: Math.max(...obstacles.map((rect) => rect.right)),
+    top: Math.min(...obstacles.map((rect) => rect.top)),
+    bottom: Math.max(...obstacles.map((rect) => rect.bottom))
+  } : null;
+  const outsideX = from.x <= to.x
+    ? (obstacleBounds?.right ?? Math.max(from.x, to.x)) + 90 + Math.abs(laneOffset)
+    : (obstacleBounds?.left ?? Math.min(from.x, to.x)) - 90 - Math.abs(laneOffset);
+  const lowerBusY = Math.max(start.y, end.y, obstacleBounds?.bottom ?? 0) + 110 + Math.abs(laneOffset);
+  const upperBusY = Math.min(start.y, end.y, obstacleBounds?.top ?? 0) - 110 - Math.abs(laneOffset);
+  const fallbackStart = startVariants[1] || startVariants[0];
+  const fallbackEnd = endVariants[1] || endVariants[0];
+  const fallbackStartLead = fallbackStart.at(-1);
+  const fallbackEndLead = fallbackEnd.at(-1);
+  const fallbackEndTail = [...fallbackEnd].reverse();
+  const candidates = [
+    [...fallbackStart, { x: outsideX, y: fallbackStartLead.y }, { x: outsideX, y: fallbackEndLead.y }, ...fallbackEndTail],
+    [...fallbackStart, { x: fallbackStartLead.x, y: lowerBusY }, { x: fallbackEndLead.x, y: lowerBusY }, ...fallbackEndTail],
+    [...fallbackStart, { x: fallbackStartLead.x, y: upperBusY }, { x: fallbackEndLead.x, y: upperBusY }, ...fallbackEndTail]
   ];
-  return roundedPolylinePath(points, 16);
+  const clean = candidates.find((points) => !pathCollides(points, obstacles)) || candidates[1];
+  return roundedPolylinePath(clean, 16);
 }
 
 function portButtonHtml(port) {
@@ -989,7 +1140,7 @@ function renderConnections() {
     const from = endpointPosition(connection.from);
     const to = endpointPosition(connection.to);
     const laneOffset = ((index % 5) - 2) * 10;
-    const pathData = makeConnectionPath(from, to, laneOffset);
+    const pathData = makeConnectionPath(from, to, laneOffset, connectionObstacles(connection));
     const cable = CABLE_TYPES.find((item) => item.id === connection.cableType) || CABLE_TYPES.at(-1);
 
     const hit = document.createElementNS(svgNS, "path");
@@ -1363,6 +1514,7 @@ function render() {
   renderDeviceList();
   renderInspector();
   renderSummary();
+  renderActualVersionSelect();
   applyWorldTransform();
 }
 
@@ -1507,6 +1659,21 @@ function setZoom(nextZoom) {
   applyWorldTransform();
 }
 
+function zoomAt(clientX, clientY, nextZoom) {
+  const rect = els.canvasViewport.getBoundingClientRect();
+  const before = screenToWorld(clientX, clientY);
+  state.zoom = Math.min(2.5, Math.max(0.28, nextZoom));
+  state.pan.x = clientX - rect.left - before.x * state.zoom;
+  state.pan.y = clientY - rect.top - before.y * state.zoom;
+  applyWorldTransform();
+}
+
+function onCanvasWheel(event) {
+  event.preventDefault();
+  const factor = Math.exp(-event.deltaY * 0.0012);
+  zoomAt(event.clientX, event.clientY, state.zoom * factor);
+}
+
 function centerOnDevice(deviceId) {
   const device = state.project.devices.find((item) => item.id === deviceId);
   if (!device) return;
@@ -1627,6 +1794,106 @@ async function loadExample() {
   showToast(t("exampleLoaded"));
 }
 
+async function refreshActualVersions(fileName = state.actualLabFileName || currentProjectFileName()) {
+  try {
+    const url = `${ACTUAL_LAB_ENDPOINT}/versions?fileName=${encodeURIComponent(fileName)}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    const data = await response.json();
+    state.actualLabFileName = data.fileName || fileName;
+    state.actualLabVersions = data.versions || [];
+    renderActualVersionSelect();
+    return data;
+  } catch (error) {
+    console.warn("Actual lab versions failed", error);
+    state.actualLabVersions = [];
+    renderActualVersionSelect();
+    return null;
+  }
+}
+
+async function loadActualLabWiring() {
+  let fileName = state.actualLabFileName || currentProjectFileName();
+  let response = await fetch(`${ACTUAL_LAB_ENDPOINT}/current?fileName=${encodeURIComponent(fileName)}`);
+  if (!response.ok) {
+    const listResponse = await fetch(`${ACTUAL_LAB_ENDPOINT}/list`);
+    if (!listResponse.ok) throw new Error(t("actualUnavailable"));
+    const listData = await listResponse.json();
+    fileName = listData.files?.[0]?.fileName || "";
+    if (!fileName) throw new Error(t("noActualVersions"));
+    response = await fetch(`${ACTUAL_LAB_ENDPOINT}/current?fileName=${encodeURIComponent(fileName)}`);
+  }
+  if (!response.ok) throw new Error(t("actualUnavailable"));
+  const data = await response.json();
+  const project = parseProjectJson(data.content);
+  setProject(project, {
+    fileName: data.fileName,
+    fileHandle: null,
+    dirty: false,
+    sourceText: data.content
+  });
+  state.actualLabFileName = data.fileName;
+  state.actualLabVersions = data.versions || [];
+  renderActualVersionSelect();
+  showToast(t("actualLoaded", { file: data.fileName }));
+}
+
+async function publishActualLabWiring() {
+  const content = currentProjectText();
+  const fileName = currentProjectFileName();
+  const response = await fetch(`${ACTUAL_LAB_ENDPOINT}/update`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fileName,
+      reason: "editor-update",
+      note: "Updated from Lab Wiring Editor",
+      content
+    })
+  });
+  if (!response.ok) throw new Error(t("actualUnavailable"));
+  const data = await response.json();
+  state.actualLabFileName = data.fileName;
+  state.fileName = data.fileName;
+  state.fileHandle = null;
+  state.lastSavedText = content;
+  state.lastAutoSaveText = content;
+  state.dirty = false;
+  await refreshActualVersions(data.fileName);
+  updateStatus();
+  showToast(t("actualUpdated", { file: data.fileName }));
+}
+
+async function rollbackActualLabWiring() {
+  const versionId = els.actualVersionSelect.value;
+  if (!versionId) {
+    showToast(t("noActualVersions"));
+    return;
+  }
+  if (!window.confirm(t("rollbackConfirm"))) return;
+  const fileName = state.actualLabFileName || currentProjectFileName();
+  const response = await fetch(`${ACTUAL_LAB_ENDPOINT}/rollback`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fileName,
+      versionId,
+      note: "Rollback from Lab Wiring Editor"
+    })
+  });
+  if (!response.ok) throw new Error(t("actualUnavailable"));
+  const data = await response.json();
+  setProject(parseProjectJson(data.content), {
+    fileName: data.fileName,
+    fileHandle: null,
+    dirty: false,
+    sourceText: data.content
+  });
+  state.actualLabFileName = data.fileName;
+  await refreshActualVersions(data.fileName);
+  showToast(t("actualRolledBack", { version: data.rolledBackTo }));
+}
+
 async function runAutoSave() {
   if (!state.autoSaveEnabled) return;
   const nextText = currentProjectText();
@@ -1703,8 +1970,8 @@ function autoArrangeDevices() {
     devices.forEach((device, index) => {
       const column = index % 3;
       const row = Math.floor(index / 3);
-      device.position.x = 120 + column * 360;
-      device.position.y = 120 + row * 260;
+      device.position.x = 120 + column * 460;
+      device.position.y = 120 + row * 320;
     });
   } else {
     const columns = new Map();
@@ -1718,9 +1985,9 @@ function autoArrangeDevices() {
       let y = 120;
       for (const device of columnDevices) {
         ensureDeviceSize(device);
-        device.position.x = 120 + level * 410;
+        device.position.x = 120 + level * 520;
         device.position.y = y;
-        y += Math.max(device.size.height + 70, 240);
+        y += Math.max(device.size.height + 130, 310);
       }
     }
   }
@@ -1749,6 +2016,9 @@ function bindEvents() {
   els.saveAsProjectBtn.addEventListener("click", () => saveProjectAs().catch((error) => {
     if (error.name !== "AbortError") showToast(error.message);
   }));
+  els.loadActualBtn.addEventListener("click", () => loadActualLabWiring().catch((error) => showToast(error.message)));
+  els.publishActualBtn.addEventListener("click", () => publishActualLabWiring().catch((error) => showToast(error.message)));
+  els.rollbackActualBtn.addEventListener("click", () => rollbackActualLabWiring().catch((error) => showToast(error.message)));
   els.loadExampleBtn.addEventListener("click", () => loadExample().catch((error) => showToast(error.message)));
   els.validateBtn.addEventListener("click", validateAndReport);
   els.arrangeBtn.addEventListener("click", autoArrangeDevices);
@@ -1779,6 +2049,7 @@ function bindEvents() {
   els.zoomResetBtn.addEventListener("click", () => setZoom(1));
   els.zoomInBtn.addEventListener("click", () => setZoom(state.zoom * 1.16));
   els.canvasViewport.addEventListener("pointerdown", startPan);
+  els.canvasViewport.addEventListener("wheel", onCanvasWheel, { passive: false });
   window.addEventListener("pointermove", onPointerMove);
   window.addEventListener("pointerup", onPointerUp);
   els.summaryOutput.addEventListener("input", () => {
@@ -1908,3 +2179,4 @@ render();
 state.lastSavedText = currentProjectText();
 state.lastAutoSaveText = state.lastSavedText;
 startAutoSaveTimer();
+refreshActualVersions().catch((error) => console.warn("Initial actual lab versions failed", error));

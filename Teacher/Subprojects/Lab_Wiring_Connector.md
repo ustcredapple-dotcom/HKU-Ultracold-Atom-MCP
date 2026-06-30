@@ -41,12 +41,14 @@ Speaker/Lab_Wiring_Editor
 - `Save`: 修改当前打开的工程文件。
 - `Save As`: 另存为新的工程文件。
 - 默认保存目录: `linker/Lab_Wiring_Connector/projects/User_Projects`。当工程没有当前文件句柄时，点击 `Save` 会写入这个目录。
+- 真实实验室接线库目录: `linker/Lab_Wiring_Connector/projects/Actual_Lab_Wiring`。顶部工具栏提供 `读取现状`、`更新现状`、版本选择和 `回滚`，用于维护反映现实实验室当前连线的受控版本库。
 - 加载示例工程。
 - 校验工程文件。
 - 查看 AI 摘要。
 - 在右下角 `代码 / Code` 视图直接编辑 `.labwire.json`，点击 `应用 / Apply` 后由代码重新生成图。
 - 自动保存模式默认开启：打开工程时先备份一次；每 1 分钟自动保存改动；每次正常保存或自动写入当前文件前，先把上一版本备份。
 - 点击已经连接的线会选中该连接，右侧属性面板可以修改线型或删除；画布上也会弹出快捷工具条，可直接修改线型或删除连接。
+- 鼠标滚轮可以围绕光标位置缩放画布；`整理 / Arrange` 会在底部接口下方存在器件时优先绕开，减少方块压在线上的情况。
 
 双语模式说明:
 
@@ -106,6 +108,21 @@ linker/Lab_Wiring_Connector/projects/User_Projects
 ```
 
 这个目录用于当前正在维护的 `.labwire.json` 工程文件。历史版本和自动备份仍然放在 `History/Tool_History/Lab_Wiring_Connector_Backups`。
+
+真实实验室当前接线目录:
+
+```text
+linker/Lab_Wiring_Connector/projects/Actual_Lab_Wiring
+```
+
+这个目录用于保存“现实实验室当前到底怎么连”的受控记录:
+
+- `current/`: 当前有效的真实实验室接线文件。
+- `versions/`: 每次通过编辑器更新或回滚时生成的不可变快照。
+- `version_index.jsonl`: 版本库索引，包含版本 id、文件名、更新原因、内容 sha256、前一条记录 hash 和快照路径。
+- `manifest.json`: 当前文件列表和最新版本的摘要，方便 AI 快速读取。
+
+第一版真实接线文件为 `ZZLab.labwire.json`，来自用户已经保存的 `User_Projects/ZZLab.labwire.json`。后续请通过编辑器的 `更新现状` 写入真实接线库，避免手工覆盖 `current/` 破坏版本链。
 
 ## 打开网页
 

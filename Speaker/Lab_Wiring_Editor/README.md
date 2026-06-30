@@ -86,7 +86,9 @@ The backup folder is organized by date and also maintains `backup_index.jsonl`.
 
 Use `Arrange` in the top toolbar to automatically organize devices. The editor places connected devices into left-to-right layers and gives large devices more vertical room.
 
-Connections are drawn as clean rounded orthogonal lines with a subtle white backing stroke for readability.
+Connections are drawn as clean rounded orthogonal lines with a subtle white backing stroke for readability. When a device sits under a bottom-facing port, the router steps sideways before entering the main line path so arranged diagrams do not put a block directly on top of a wire.
+
+Use the mouse wheel over the canvas to zoom around the cursor position. The `-` and `+` buttons still provide fixed-step zoom controls.
 
 ## Project Files
 
@@ -115,6 +117,29 @@ linker/Lab_Wiring_Connector/projects/User_Projects
 This folder is the best default location because `.labwire.json` files are AI-readable lab topology knowledge owned by the linker engine. `Speaker` is only the web editor, and `History/Tool_History` is for backups and older versions.
 
 Before this default-save feature, the editor did not have a fixed default folder. The location was controlled by the browser: either the file picker location, the current browser file handle, or the browser downloads folder.
+
+## Actual Lab Wiring Folder
+
+The trusted record of the physical lab wiring is stored separately from drafts:
+
+```text
+linker/Lab_Wiring_Connector/projects/Actual_Lab_Wiring
+```
+
+Use the top toolbar controls:
+
+- `Read Lab` / `读取现状`: load the current actual lab wiring file from `Actual_Lab_Wiring/current`.
+- `Update Lab` / `更新现状`: publish the current editor project into the actual lab folder. This writes the current file and appends an immutable version snapshot.
+- Version dropdown + `Rollback` / `回滚`: restore a selected version. The rollback itself is also recorded as a new version.
+
+The version library is append-only:
+
+```text
+linker/Lab_Wiring_Connector/projects/Actual_Lab_Wiring/version_index.jsonl
+linker/Lab_Wiring_Connector/projects/Actual_Lab_Wiring/versions
+```
+
+`ZZLab.labwire.json` was initialized as the first actual lab wiring version from the user-saved project in `User_Projects`.
 
 ## Connection Editing
 

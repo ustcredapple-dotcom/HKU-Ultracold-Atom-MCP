@@ -139,6 +139,15 @@ button.icon-button {
   border-color: #64748b;
 }
 
+.toolbar-select {
+  width: min(220px, 18vw);
+  min-width: 140px;
+  min-height: 34px;
+  border-color: #334155;
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
 .toolbar button.autosave-toggle.active {
   border-color: #14b8a6;
   color: #ccfbf1;

@@ -1,0 +1,15 @@
+{
+  "kind": "hku.ultracold.actual_lab_wiring_manifest",
+  "updatedAt": "2026-06-30T20:56:11",
+  "currentFiles": [
+    {
+      "fileName": "ZZLab.labwire.json",
+      "relativePath": "linker\\Lab_Wiring_Connector\\projects\\Actual_Lab_Wiring\\current\\ZZLab.labwire.json",
+      "latestVersionId": "20260630T205611_150992_ZZLab",
+      "contentSha256": "319f7e1078ea6b96c8f461f0164f651c73f5b652de79a743a79ccdd57bcb8648",
+      "updatedAt": "2026-06-30T20:56:11"
+    }
+  ],
+  "latestEntryHash": "d1c3c752d28e9d01fd95a7cef4614d41854895946ba361e6ca297474b567da14",
+  "versionIndex": "linker\\Lab_Wiring_Connector\\projects\\Actual_Lab_Wiring\\version_index.jsonl"
+}
