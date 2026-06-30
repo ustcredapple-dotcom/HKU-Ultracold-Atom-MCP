@@ -26,4 +26,6 @@ Date: 2026-06-30
 
 ## Pending Commit
 
-Commit hash and push status will be appended after the final git push.
+Main commit: `4e1f3ec` (`Improve lab wiring port visual states`)
+
+Push status: pushed to `main` on `https://github.com/ustcredapple-dotcom/HKU-Ultracold-Atom-MCP.git`.
