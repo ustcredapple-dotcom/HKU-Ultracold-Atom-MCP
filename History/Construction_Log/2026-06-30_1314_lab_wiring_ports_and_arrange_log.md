@@ -90,3 +90,18 @@ createPortType(project, { name: "PLL Lock", color: "#b45309" })
 - 未读取 `Key`。
 - 未连接实验硬件。
 - 未修改任何真实实验配置。
+
+## Commit 与 GitHub 推送结果
+
+已创建并推送功能提交:
+
+```text
+1021fb3 Improve wiring port types and layout
+```
+
+推送目标:
+
+```text
+https://github.com/ustcredapple-dotcom/HKU-Ultracold-Atom-MCP.git
+main -> origin/main
+```
