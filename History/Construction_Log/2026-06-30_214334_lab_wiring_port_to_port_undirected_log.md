@@ -29,4 +29,6 @@ Date: 2026-06-30
 
 ## Pending Commit
 
-Commit hash and push status will be appended after the final git push.
+Main commit: `900144e` (`Anchor lab wiring connections to ports`)
+
+Push status: pushed to `main` on `https://github.com/ustcredapple-dotcom/HKU-Ultracold-Atom-MCP.git`.
