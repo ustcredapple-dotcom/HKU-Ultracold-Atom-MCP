@@ -24,6 +24,19 @@ http://127.0.0.1:8765/Speaker/Lab_Wiring_Editor/web/index.html
 
 The local server is used so the browser can read linker modules and use modern file save features.
 
+## Language
+
+The editor supports Chinese and English UI modes. Use the `中文 / EN` switch in the top bar.
+
+The language choice affects:
+
+- UI labels and buttons.
+- Dialog text and status messages.
+- Default names for new devices and ports.
+- Validation headers and the AI summary.
+
+Existing project data is not translated automatically, because device names and port names are laboratory records.
+
 ## Project Files
 
 Recommended extension:

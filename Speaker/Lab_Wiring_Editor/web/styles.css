@@ -29,6 +29,8 @@ body {
 }
 
 body {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -75,10 +77,10 @@ button.icon-button {
 }
 
 .app-topbar {
-  height: 68px;
+  min-height: 68px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 24px;
   padding: 0 18px;
   background: #111827;
@@ -123,6 +125,7 @@ button.icon-button {
   justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .toolbar button {
@@ -136,8 +139,32 @@ button.icon-button {
   border-color: #64748b;
 }
 
+.language-toggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(44px, auto));
+  border: 1px solid #334155;
+  border-radius: 7px;
+  overflow: hidden;
+  margin-left: 8px;
+  flex: 0 0 auto;
+}
+
+.language-toggle button {
+  border: 0;
+  border-radius: 0;
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.language-toggle button.active {
+  background: #0f766e;
+  color: #fff;
+}
+
 .app-shell {
-  height: calc(100vh - 68px);
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
   display: grid;
   grid-template-columns: minmax(260px, 300px) minmax(420px, 1fr) minmax(310px, 360px);
   min-width: 980px;

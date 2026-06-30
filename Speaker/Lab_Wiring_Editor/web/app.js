@@ -17,6 +17,296 @@ import {
 
 const $ = (selector) => document.querySelector(selector);
 const svgNS = "http://www.w3.org/2000/svg";
+const LANGUAGE_STORAGE_KEY = "hku.labWiringEditor.language";
+
+const translations = {
+  en: {
+    appTitle: "Lab Wiring Editor",
+    untitled: "Untitled lab wiring",
+    unsavedPrefix: "Unsaved - ",
+    projectActions: "Project actions",
+    new: "New",
+    newTitle: "New project",
+    open: "Open",
+    openTitle: "Open .labwire.json",
+    save: "Save",
+    saveTitle: "Save current project",
+    saveAs: "Save As",
+    saveAsTitle: "Save as new project",
+    example: "Example",
+    exampleTitle: "Load example",
+    validate: "Validate",
+    validateTitle: "Validate project",
+    project: "Project",
+    title: "Title",
+    description: "Description",
+    devices: "Devices",
+    add: "Add",
+    search: "Search",
+    searchPlaceholder: "Device, port, signal...",
+    canvas: "Canvas",
+    canvasHint: "Drag devices by their header. Drag empty canvas to pan.",
+    wiringCanvas: "Wiring canvas",
+    interactionDefault: "Click a port, then click another port to create a connection.",
+    inspector: "Inspector",
+    aiView: "AI View",
+    copy: "Copy",
+    addDeviceBlock: "Add Device Block",
+    close: "Close",
+    name: "Name",
+    kind: "Kind",
+    instrument: "Instrument",
+    controlSystem: "Control system",
+    laser: "Laser",
+    opticalComponent: "Optical component",
+    electronics: "Electronics",
+    vacuum: "Vacuum component",
+    computer: "Computer/server",
+    custom: "Custom",
+    interfaces: "Interfaces",
+    inputs: "Inputs",
+    outputs: "Outputs",
+    location: "Location",
+    locationPlaceholder: "rack, optical table, shelf...",
+    notes: "Notes",
+    cancel: "Cancel",
+    create: "Create",
+    createConnection: "Create Connection",
+    lineType: "Line type",
+    label: "Label",
+    connectionLabelPlaceholder: "TTL trigger, RF, 780 nm beam...",
+    signalType: "Signal type",
+    signalPlaceholder: "TTL, analog, optical, RF...",
+    connect: "Connect",
+    noInputs: "No inputs",
+    noOutputs: "No outputs",
+    noLocation: "no location",
+    portsTitle: "Ports",
+    ports: "ports",
+    port: "Port",
+    input: "Input",
+    output: "Output",
+    interface: "Interface",
+    manufacturer: "Manufacturer",
+    model: "Model",
+    addPort: "Add Port",
+    delete: "Delete",
+    deleteDevice: "Delete Device",
+    deleteConnection: "Delete Connection",
+    inspectorEmpty: "Select a device, connection, or port. Device properties and named ports are edited here.",
+    portNameTitle: "Port name",
+    directionTitle: "Direction",
+    signalPlaceholderShort: "signal",
+    connectorPlaceholder: "connector",
+    from: "From",
+    to: "To",
+    connectionSelected: "Connection selected.",
+    selectedPort: "Selected {device} / {port}. Click another port to connect.",
+    portSelectionCleared: "Port selection cleared.",
+    invalidConnection: "Invalid connection. Check port direction and endpoints.",
+    openedFile: "Opened {file}",
+    savedFile: "Saved {file}",
+    exampleLoaded: "Example loaded. Use Save As to keep a copy.",
+    failedLoadExample: "Failed to load example: {status}",
+    validProject: "Project file is valid.",
+    validWithWarnings: "Valid with {count} warning(s).",
+    validationFailed: "Validation failed: {message}",
+    newProjectCreated: "New project created.",
+    aiSummaryCopied: "AI summary copied.",
+    connectionCreated: "Connection created.",
+    filePickerDesc: "Lab wiring project",
+    newInstrument: "New instrument",
+    newPort: "New port",
+    defaultInterface: "Interface {index}",
+    defaultInput: "Input {index}",
+    defaultOutput: "Output {index}",
+    validationOk: "Validation: OK",
+    validationErrors: "Validation: {count} error(s)",
+    warnings: "Warnings",
+    errors: "Errors",
+    summaryProject: "Project",
+    summaryDescription: "Description",
+    summaryDevices: "Devices",
+    summaryConnections: "Connections",
+    summaryDeviceLine: "- {name} ({kind}, id={id})",
+    summaryPortLine: "  - {name} [{details}]",
+    summaryConnectionLine: "- {label}: {fromDevice}.{fromPort} -> {toDevice}.{toPort} ({cable})",
+    portDetailsFallback: "port",
+    cableBnc: "BNC",
+    cableSma: "SMA/RF",
+    cableTtl: "TTL trigger",
+    cableFiber: "Optical fiber",
+    cableFreeSpace: "Free-space beam",
+    cableEthernet: "Ethernet",
+    cableUsb: "USB",
+    cablePower: "Power",
+    cableCustom: "Custom"
+  },
+  zh: {
+    appTitle: "实验室接线编辑器",
+    untitled: "未命名接线工程",
+    unsavedPrefix: "未保存 - ",
+    projectActions: "工程操作",
+    new: "新建",
+    newTitle: "新建工程",
+    open: "打开",
+    openTitle: "打开 .labwire.json",
+    save: "保存",
+    saveTitle: "保存当前工程",
+    saveAs: "另存为",
+    saveAsTitle: "另存为新工程",
+    example: "示例",
+    exampleTitle: "加载示例",
+    validate: "校验",
+    validateTitle: "校验工程",
+    project: "工程",
+    title: "标题",
+    description: "描述",
+    devices: "器件",
+    add: "新增",
+    search: "搜索",
+    searchPlaceholder: "器件、接口、信号...",
+    canvas: "画布",
+    canvasHint: "拖动器件标题移动方块。拖动画布空白处平移。",
+    wiringCanvas: "接线画布",
+    interactionDefault: "点击一个接口，再点击另一个接口来创建连接。",
+    inspector: "属性",
+    aiView: "AI 视图",
+    copy: "复制",
+    addDeviceBlock: "新增器件方块",
+    close: "关闭",
+    name: "名称",
+    kind: "类型",
+    instrument: "仪器",
+    controlSystem: "控制系统",
+    laser: "激光器",
+    opticalComponent: "光学器件",
+    electronics: "电子学",
+    vacuum: "真空器件",
+    computer: "电脑/服务器",
+    custom: "自定义",
+    interfaces: "通用接口",
+    inputs: "输入",
+    outputs: "输出",
+    location: "位置",
+    locationPlaceholder: "机架、光学平台、架子...",
+    notes: "备注",
+    cancel: "取消",
+    create: "创建",
+    createConnection: "创建连接",
+    lineType: "线型",
+    label: "标签",
+    connectionLabelPlaceholder: "TTL 触发、RF、780 nm 光束...",
+    signalType: "信号类型",
+    signalPlaceholder: "TTL、模拟、光、RF...",
+    connect: "连接",
+    noInputs: "无输入",
+    noOutputs: "无输出",
+    noLocation: "未填写位置",
+    portsTitle: "接口",
+    ports: "个接口",
+    port: "接口",
+    input: "输入",
+    output: "输出",
+    interface: "通用接口",
+    manufacturer: "厂家",
+    model: "型号",
+    addPort: "添加接口",
+    delete: "删除",
+    deleteDevice: "删除器件",
+    deleteConnection: "删除连接",
+    inspectorEmpty: "请选择器件、连接或接口。这里可以编辑器件属性和接口名称。",
+    portNameTitle: "接口名称",
+    directionTitle: "方向",
+    signalPlaceholderShort: "信号",
+    connectorPlaceholder: "接头",
+    from: "起点",
+    to: "终点",
+    connectionSelected: "已选中连接。",
+    selectedPort: "已选中 {device} / {port}。请点击另一个接口来连接。",
+    portSelectionCleared: "已清除接口选择。",
+    invalidConnection: "连接无效。请检查接口方向和端点。",
+    openedFile: "已打开 {file}",
+    savedFile: "已保存 {file}",
+    exampleLoaded: "示例已加载。请用“另存为”保存副本。",
+    failedLoadExample: "加载示例失败: {status}",
+    validProject: "工程文件校验通过。",
+    validWithWarnings: "校验通过，但有 {count} 个警告。",
+    validationFailed: "校验失败: {message}",
+    newProjectCreated: "已创建新工程。",
+    aiSummaryCopied: "AI 摘要已复制。",
+    connectionCreated: "连接已创建。",
+    filePickerDesc: "实验室接线工程",
+    newInstrument: "新器件",
+    newPort: "新接口",
+    defaultInterface: "通用接口 {index}",
+    defaultInput: "输入 {index}",
+    defaultOutput: "输出 {index}",
+    validationOk: "校验：通过",
+    validationErrors: "校验：{count} 个错误",
+    warnings: "警告",
+    errors: "错误",
+    summaryProject: "工程",
+    summaryDescription: "描述",
+    summaryDevices: "器件",
+    summaryConnections: "连接",
+    summaryDeviceLine: "- {name}（{kind}，id={id}）",
+    summaryPortLine: "  - {name} [{details}]",
+    summaryConnectionLine: "- {label}: {fromDevice}.{fromPort} -> {toDevice}.{toPort}（{cable}）",
+    portDetailsFallback: "接口",
+    cableBnc: "BNC",
+    cableSma: "SMA/RF",
+    cableTtl: "TTL 触发",
+    cableFiber: "光纤",
+    cableFreeSpace: "自由空间光束",
+    cableEthernet: "以太网",
+    cableUsb: "USB",
+    cablePower: "电源",
+    cableCustom: "自定义"
+  }
+};
+
+function initialLanguage() {
+  const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  if (saved === "en" || saved === "zh") return saved;
+  return navigator.language?.toLowerCase().startsWith("zh") ? "zh" : "en";
+}
+
+let activeLanguage = initialLanguage();
+
+function t(key, values = {}) {
+  const table = translations[activeLanguage] || translations.en;
+  const template = table[key] || translations.en[key] || key;
+  return template.replaceAll(/\{(\w+)\}/g, (_, name) => String(values[name] ?? ""));
+}
+
+function kindLabel(kind) {
+  return {
+    instrument: t("instrument"),
+    control_system: t("controlSystem"),
+    laser: t("laser"),
+    optical_component: t("opticalComponent"),
+    electronics: t("electronics"),
+    vacuum: t("vacuum"),
+    computer: t("computer"),
+    custom: t("custom")
+  }[kind] || kind || t("port");
+}
+
+function cableLabel(cableType) {
+  const key = {
+    bnc: "cableBnc",
+    sma: "cableSma",
+    ttl: "cableTtl",
+    fiber: "cableFiber",
+    "free-space": "cableFreeSpace",
+    ethernet: "cableEthernet",
+    usb: "cableUsb",
+    power: "cablePower",
+    custom: "cableCustom"
+  }[cableType];
+  return key ? t(key) : cableType;
+}
 
 const els = {
   fileStatus: $("#fileStatus"),
@@ -50,11 +340,13 @@ const els = {
   connectionEndpoints: $("#connectionEndpoints"),
   cableTypeSelect: $("#cableTypeSelect"),
   fallbackFileInput: $("#fallbackFileInput"),
-  toast: $("#toast")
+  toast: $("#toast"),
+  languageButtons: document.querySelectorAll("[data-lang]")
 };
 
 const state = {
-  project: createEmptyProject(),
+  project: createEmptyProject(t("untitled")),
+  language: activeLanguage,
   fileHandle: null,
   fileName: "",
   dirty: false,
@@ -68,6 +360,118 @@ const state = {
   drag: null,
   panDrag: null
 };
+
+function setElementText(selector, key) {
+  const element = $(selector);
+  if (element) element.textContent = t(key);
+}
+
+function setElementTitle(selector, key) {
+  const element = $(selector);
+  if (element) element.title = t(key);
+}
+
+function setElementPlaceholder(selector, key) {
+  const element = $(selector);
+  if (element) element.placeholder = t(key);
+}
+
+function setInputLabel(inputSelector, key) {
+  const input = $(inputSelector);
+  const label = input?.closest("label");
+  const span = label?.querySelector("span");
+  if (span) span.textContent = t(key);
+}
+
+function applyStaticTranslations() {
+  document.documentElement.lang = activeLanguage === "zh" ? "zh-CN" : "en";
+  document.title = t("appTitle");
+  setElementText(".brand h1", "appTitle");
+  const toolbar = $(".toolbar");
+  if (toolbar) toolbar.setAttribute("aria-label", t("projectActions"));
+
+  const buttonMap = [
+    ["#newProjectBtn", "new", "newTitle"],
+    ["#openProjectBtn", "open", "openTitle"],
+    ["#saveProjectBtn", "save", "saveTitle"],
+    ["#saveAsProjectBtn", "saveAs", "saveAsTitle"],
+    ["#loadExampleBtn", "example", "exampleTitle"],
+    ["#validateBtn", "validate", "validateTitle"],
+    ["#addDeviceBtn", "add", null],
+    ["#copySummaryBtn", "copy", null],
+    ["#createDeviceBtn", "create", null],
+    ["#createConnectionBtn", "connect", null]
+  ];
+  for (const [selector, textKey, titleKey] of buttonMap) {
+    setElementText(selector, textKey);
+    if (titleKey) setElementTitle(selector, titleKey);
+  }
+
+  const headings = [
+    [".left-panel .panel-section:nth-of-type(1) h2", "project"],
+    [".left-panel .panel-section:nth-of-type(2) h2", "devices"],
+    [".left-panel .panel-section:nth-of-type(3) h2", "canvas"],
+    [".right-panel .panel-section:nth-of-type(1) h2", "inspector"],
+    [".right-panel .panel-section:nth-of-type(2) h2", "aiView"],
+    ["#deviceDialog h2", "addDeviceBlock"],
+    ["#connectionDialog h2", "createConnection"]
+  ];
+  for (const [selector, key] of headings) setElementText(selector, key);
+
+  setInputLabel("#projectTitleInput", "title");
+  setInputLabel("#projectDescriptionInput", "description");
+  setInputLabel("#searchInput", "search");
+  setInputLabel("#deviceForm input[name='name']", "name");
+  setInputLabel("#deviceForm select[name='kind']", "kind");
+  setInputLabel("#deviceForm input[name='genericCount']", "interfaces");
+  setInputLabel("#deviceForm input[name='inputCount']", "inputs");
+  setInputLabel("#deviceForm input[name='outputCount']", "outputs");
+  setInputLabel("#deviceForm input[name='location']", "location");
+  setInputLabel("#deviceForm textarea[name='notes']", "notes");
+  setInputLabel("#connectionForm select[name='cableType']", "lineType");
+  setInputLabel("#connectionForm input[name='label']", "label");
+  setInputLabel("#connectionForm input[name='signalType']", "signalType");
+  setInputLabel("#connectionForm textarea[name='notes']", "notes");
+
+  setElementPlaceholder("#searchInput", "searchPlaceholder");
+  setElementPlaceholder("#deviceForm input[name='location']", "locationPlaceholder");
+  setElementPlaceholder("#connectionForm input[name='label']", "connectionLabelPlaceholder");
+  setElementPlaceholder("#connectionForm input[name='signalType']", "signalPlaceholder");
+  setElementText(".left-panel .panel-section:nth-of-type(3) .hint", "canvasHint");
+  $(".canvas-panel")?.setAttribute("aria-label", t("wiringCanvas"));
+
+  const deviceKindSelect = $("#deviceForm select[name='kind']");
+  if (deviceKindSelect) {
+    const optionLabels = {
+      instrument: "instrument",
+      control_system: "controlSystem",
+      laser: "laser",
+      optical_component: "opticalComponent",
+      electronics: "electronics",
+      vacuum: "vacuum",
+      computer: "computer",
+      custom: "custom"
+    };
+    for (const option of deviceKindSelect.options) {
+      option.textContent = t(optionLabels[option.value] || "custom");
+    }
+  }
+
+  const dialogButtons = document.querySelectorAll("dialog button[value='cancel']");
+  for (const button of dialogButtons) {
+    if (button.classList.contains("icon-button")) {
+      button.title = t("close");
+    } else {
+      button.textContent = t("cancel");
+    }
+  }
+
+  for (const button of els.languageButtons) {
+    const active = button.dataset.lang === activeLanguage;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  }
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -106,8 +510,8 @@ function setProject(project, { fileName = "", fileHandle = null, dirty = false }
 }
 
 function updateStatus() {
-  const label = state.fileName || state.project.metadata.title || "Untitled lab wiring";
-  els.fileStatus.textContent = `${state.dirty ? "Unsaved - " : ""}${label}`;
+  const label = state.fileName || state.project.metadata.title || t("untitled");
+  els.fileStatus.textContent = `${state.dirty ? t("unsavedPrefix") : ""}${label}`;
   els.zoomStatus.textContent = `${Math.round(state.zoom * 100)}%`;
   state.project.canvas = {
     ...(state.project.canvas || {}),
@@ -123,10 +527,10 @@ function applyWorldTransform() {
 
 function directionLabel(direction) {
   return {
-    input: "Input",
-    output: "Output",
-    bidirectional: "Interface"
-  }[direction] || "Port";
+    input: t("input"),
+    output: t("output"),
+    bidirectional: t("interface")
+  }[direction] || t("port");
 }
 
 function deviceMatchesSearch(device) {
@@ -234,16 +638,16 @@ function renderDevice(device) {
       style="left:${device.position.x}px; top:${device.position.y}px; width:${device.size.width}px; min-height:${device.size.height}px;">
       <header class="device-header" data-drag-handle="true">
         <strong>${escapeHtml(device.name)}</strong>
-        <span>${escapeHtml(device.kind || "device")}${device.location ? ` / ${escapeHtml(device.location)}` : ""}</span>
+        <span>${escapeHtml(kindLabel(device.kind || "custom"))}${device.location ? ` / ${escapeHtml(device.location)}` : ""}</span>
       </header>
       <div class="port-columns">
         <div class="port-column">
-          <div class="port-group-title">Inputs</div>
-          ${groups.inputs.map(portButtonHtml).join("") || '<span class="hint">No inputs</span>'}
+          <div class="port-group-title">${escapeHtml(t("inputs"))}</div>
+          ${groups.inputs.map(portButtonHtml).join("") || `<span class="hint">${escapeHtml(t("noInputs"))}</span>`}
         </div>
         <div class="port-column">
-          <div class="port-group-title">Outputs</div>
-          ${groups.outputs.map(portButtonHtml).join("") || '<span class="hint">No outputs</span>'}
+          <div class="port-group-title">${escapeHtml(t("outputs"))}</div>
+          ${groups.outputs.map(portButtonHtml).join("") || `<span class="hint">${escapeHtml(t("noOutputs"))}</span>`}
         </div>
       </div>
       ${groups.interfaces.length ? `<div class="interface-row">${groups.interfaces.map(portButtonHtml).join("")}</div>` : ""}
@@ -322,7 +726,7 @@ function renderDeviceList() {
       return `
         <button type="button" class="device-list-item ${active}" data-device-id="${escapeHtml(device.id)}" ${match ? "" : "hidden"}>
           <strong>${escapeHtml(device.name)}</strong>
-          <span>${escapeHtml(device.kind || "device")} / ${(device.ports || []).length} ports / ${escapeHtml(device.location || "no location")}</span>
+          <span>${escapeHtml(kindLabel(device.kind || "custom"))} / ${(device.ports || []).length} ${escapeHtml(t("ports"))} / ${escapeHtml(device.location || t("noLocation"))}</span>
         </button>
       `;
     })
@@ -350,41 +754,41 @@ function renderInspector() {
   }
   els.inspector.innerHTML = `
     <div class="inspector-empty">
-      Select a device, connection, or port. Device properties and named ports are edited here.
+      ${escapeHtml(t("inspectorEmpty"))}
     </div>
   `;
 }
 
 function deviceInspectorHtml(device) {
   return `
-    <label class="field"><span>Name</span><input data-field="name" value="${escapeHtml(device.name)}"></label>
+    <label class="field"><span>${escapeHtml(t("name"))}</span><input data-field="name" value="${escapeHtml(device.name)}"></label>
     <div class="mini-grid">
-      <label class="field"><span>Kind</span><input data-field="kind" value="${escapeHtml(device.kind || "")}"></label>
-      <label class="field"><span>Location</span><input data-field="location" value="${escapeHtml(device.location || "")}"></label>
+      <label class="field"><span>${escapeHtml(t("kind"))}</span><input data-field="kind" value="${escapeHtml(device.kind || "")}"></label>
+      <label class="field"><span>${escapeHtml(t("location"))}</span><input data-field="location" value="${escapeHtml(device.location || "")}"></label>
     </div>
     <div class="mini-grid">
-      <label class="field"><span>Manufacturer</span><input data-field="manufacturer" value="${escapeHtml(device.manufacturer || "")}"></label>
-      <label class="field"><span>Model</span><input data-field="model" value="${escapeHtml(device.model || "")}"></label>
+      <label class="field"><span>${escapeHtml(t("manufacturer"))}</span><input data-field="manufacturer" value="${escapeHtml(device.manufacturer || "")}"></label>
+      <label class="field"><span>${escapeHtml(t("model"))}</span><input data-field="model" value="${escapeHtml(device.model || "")}"></label>
     </div>
-    <label class="field"><span>Notes</span><textarea data-field="notes" rows="3">${escapeHtml(device.notes || "")}</textarea></label>
-    <div class="section-title"><h2>Ports</h2><button id="addPortBtn" type="button">Add Port</button></div>
+    <label class="field"><span>${escapeHtml(t("notes"))}</span><textarea data-field="notes" rows="3">${escapeHtml(device.notes || "")}</textarea></label>
+    <div class="section-title"><h2>${escapeHtml(t("portsTitle"))}</h2><button id="addPortBtn" type="button">${escapeHtml(t("addPort"))}</button></div>
     <div>
       ${(device.ports || []).map((port) => `
         <div class="port-editor-row" data-port-id="${escapeHtml(port.id)}">
-          <input data-port-field="name" value="${escapeHtml(port.name)}" title="Port name">
-          <select data-port-field="direction" title="Direction">
-            <option value="input" ${port.direction === "input" ? "selected" : ""}>Input</option>
-            <option value="output" ${port.direction === "output" ? "selected" : ""}>Output</option>
-            <option value="bidirectional" ${port.direction === "bidirectional" ? "selected" : ""}>Interface</option>
+          <input data-port-field="name" value="${escapeHtml(port.name)}" title="${escapeHtml(t("portNameTitle"))}">
+          <select data-port-field="direction" title="${escapeHtml(t("directionTitle"))}">
+            <option value="input" ${port.direction === "input" ? "selected" : ""}>${escapeHtml(t("input"))}</option>
+            <option value="output" ${port.direction === "output" ? "selected" : ""}>${escapeHtml(t("output"))}</option>
+            <option value="bidirectional" ${port.direction === "bidirectional" ? "selected" : ""}>${escapeHtml(t("interface"))}</option>
           </select>
-          <input data-port-field="signalType" value="${escapeHtml(port.signalType || "")}" placeholder="signal">
-          <input data-port-field="connectorType" value="${escapeHtml(port.connectorType || "")}" placeholder="connector">
-          <button class="danger" data-delete-port="${escapeHtml(port.id)}" type="button">Delete</button>
+          <input data-port-field="signalType" value="${escapeHtml(port.signalType || "")}" placeholder="${escapeHtml(t("signalPlaceholderShort"))}">
+          <input data-port-field="connectorType" value="${escapeHtml(port.connectorType || "")}" placeholder="${escapeHtml(t("connectorPlaceholder"))}">
+          <button class="danger" data-delete-port="${escapeHtml(port.id)}" type="button">${escapeHtml(t("delete"))}</button>
         </div>
       `).join("")}
     </div>
     <div class="inspector-actions">
-      <button id="deleteDeviceBtn" class="danger" type="button">Delete Device</button>
+      <button id="deleteDeviceBtn" class="danger" type="button">${escapeHtml(t("deleteDevice"))}</button>
     </div>
   `;
 }
@@ -421,7 +825,7 @@ function bindDeviceInspector(device) {
     });
   }
   $("#addPortBtn")?.addEventListener("click", () => {
-    device.ports.push(createPort({ name: "New port", direction: "bidirectional" }));
+    device.ports.push(createPort({ name: t("newPort"), direction: "bidirectional" }));
     markDirty();
     render();
   });
@@ -438,18 +842,18 @@ function connectionInspectorHtml(connection) {
   const to = describeEndpoint(state.project, connection.to);
   return `
     <div class="connection-endpoints">
-      <div><strong>From:</strong> ${escapeHtml(from.deviceName)} / ${escapeHtml(from.portName)}</div>
-      <div><strong>To:</strong> ${escapeHtml(to.deviceName)} / ${escapeHtml(to.portName)}</div>
+      <div><strong>${escapeHtml(t("from"))}:</strong> ${escapeHtml(from.deviceName)} / ${escapeHtml(from.portName)}</div>
+      <div><strong>${escapeHtml(t("to"))}:</strong> ${escapeHtml(to.deviceName)} / ${escapeHtml(to.portName)}</div>
     </div>
-    <label class="field"><span>Name</span><input data-field="name" value="${escapeHtml(connection.name || "")}"></label>
-    <label class="field"><span>Label</span><input data-field="label" value="${escapeHtml(connection.label || "")}"></label>
-    <label class="field"><span>Line type</span><select data-field="cableType">
-      ${CABLE_TYPES.map((type) => `<option value="${type.id}" ${connection.cableType === type.id ? "selected" : ""}>${escapeHtml(type.name)}</option>`).join("")}
+    <label class="field"><span>${escapeHtml(t("name"))}</span><input data-field="name" value="${escapeHtml(connection.name || "")}"></label>
+    <label class="field"><span>${escapeHtml(t("label"))}</span><input data-field="label" value="${escapeHtml(connection.label || "")}"></label>
+    <label class="field"><span>${escapeHtml(t("lineType"))}</span><select data-field="cableType">
+      ${CABLE_TYPES.map((type) => `<option value="${type.id}" ${connection.cableType === type.id ? "selected" : ""}>${escapeHtml(cableLabel(type.id))}</option>`).join("")}
     </select></label>
-    <label class="field"><span>Signal type</span><input data-field="signalType" value="${escapeHtml(connection.signalType || "")}"></label>
-    <label class="field"><span>Notes</span><textarea data-field="notes" rows="4">${escapeHtml(connection.notes || "")}</textarea></label>
+    <label class="field"><span>${escapeHtml(t("signalType"))}</span><input data-field="signalType" value="${escapeHtml(connection.signalType || "")}"></label>
+    <label class="field"><span>${escapeHtml(t("notes"))}</span><textarea data-field="notes" rows="4">${escapeHtml(connection.notes || "")}</textarea></label>
     <div class="inspector-actions">
-      <button id="deleteConnectionBtn" class="danger" type="button">Delete Connection</button>
+      <button id="deleteConnectionBtn" class="danger" type="button">${escapeHtml(t("deleteConnection"))}</button>
     </div>
   `;
 }
@@ -474,17 +878,74 @@ function bindConnectionInspector(connection) {
   });
 }
 
+function summarizeProjectForLanguage(project) {
+  if (activeLanguage === "en") return summarizeProject(project);
+
+  const lines = [];
+  lines.push(`${t("summaryProject")}: ${project.metadata?.title || t("untitled")}`);
+  if (project.metadata?.description) lines.push(`${t("summaryDescription")}: ${project.metadata.description}`);
+  lines.push(`${t("summaryDevices")}: ${project.devices.length}`);
+  for (const device of project.devices) {
+    lines.push(t("summaryDeviceLine", {
+      name: device.name,
+      kind: kindLabel(device.kind || "custom"),
+      id: device.id
+    }));
+    for (const port of device.ports || []) {
+      const details = [
+        directionLabel(port.direction),
+        port.signalType,
+        port.medium,
+        port.connectorType
+      ].filter(Boolean).join(", ");
+      lines.push(t("summaryPortLine", {
+        name: port.name,
+        details: details || t("portDetailsFallback")
+      }));
+    }
+  }
+  lines.push(`${t("summaryConnections")}: ${project.connections.length}`);
+  for (const connection of project.connections) {
+    const from = describeEndpoint(project, connection.from);
+    const to = describeEndpoint(project, connection.to);
+    lines.push(t("summaryConnectionLine", {
+      label: connection.label || connection.name || cableLabel(connection.cableType),
+      fromDevice: from.deviceName,
+      fromPort: from.portName,
+      toDevice: to.deviceName,
+      toPort: to.portName,
+      cable: cableLabel(connection.cableType)
+    }));
+  }
+  return lines.join("\n");
+}
+
 function renderSummary() {
   const validation = validateProject(state.project);
   const header = validation.ok
-    ? "Validation: OK"
-    : `Validation: ${validation.errors.length} error(s)`;
-  const warnings = validation.warnings.length ? `\nWarnings:\n- ${validation.warnings.join("\n- ")}` : "";
-  const errors = validation.errors.length ? `\nErrors:\n- ${validation.errors.join("\n- ")}` : "";
-  els.summaryOutput.value = `${header}${errors}${warnings}\n\n${summarizeProject(state.project)}`;
+    ? t("validationOk")
+    : t("validationErrors", { count: validation.errors.length });
+  const warnings = validation.warnings.length ? `\n${t("warnings")}:\n- ${validation.warnings.join("\n- ")}` : "";
+  const errors = validation.errors.length ? `\n${t("errors")}:\n- ${validation.errors.join("\n- ")}` : "";
+  els.summaryOutput.value = `${header}${errors}${warnings}\n\n${summarizeProjectForLanguage(state.project)}`;
+}
+
+function setLanguage(language) {
+  if (!["en", "zh"].includes(language)) return;
+  activeLanguage = language;
+  state.language = language;
+  localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  if (!state.pendingPort && !state.selectedConnectionId) {
+    els.interactionStatus.textContent = t("interactionDefault");
+  }
+  render();
 }
 
 function render() {
+  applyStaticTranslations();
+  if (!state.pendingPort && !state.selectedConnectionId) {
+    els.interactionStatus.textContent = t("interactionDefault");
+  }
   els.projectTitleInput.value = state.project.metadata.title || "";
   els.projectDescriptionInput.value = state.project.metadata.description || "";
   renderConnections();
@@ -505,7 +966,7 @@ function selectConnection(connectionId) {
   state.selectedConnectionId = connectionId;
   state.selectedDeviceId = null;
   state.pendingPort = null;
-  els.interactionStatus.textContent = "Connection selected.";
+  els.interactionStatus.textContent = t("connectionSelected");
   render();
 }
 
@@ -516,20 +977,20 @@ function handlePortClick(deviceId, portId) {
   if (!state.pendingPort) {
     state.pendingPort = endpoint;
     const info = describeEndpoint(state.project, endpoint);
-    els.interactionStatus.textContent = `Selected ${info.deviceName} / ${info.portName}. Click another port to connect.`;
+    els.interactionStatus.textContent = t("selectedPort", { device: info.deviceName, port: info.portName });
     render();
     return;
   }
   const first = state.pendingPort;
   if (first.deviceId === endpoint.deviceId && first.portId === endpoint.portId) {
     state.pendingPort = null;
-    els.interactionStatus.textContent = "Port selection cleared.";
+    els.interactionStatus.textContent = t("portSelectionCleared");
     render();
     return;
   }
   const check = canConnect(state.project, first, endpoint);
   if (!check.ok) {
-    showToast(check.errors.join(" "));
+    showToast(activeLanguage === "zh" ? t("invalidConnection") : check.errors.join(" "));
     state.pendingPort = null;
     render();
     return;
@@ -542,11 +1003,11 @@ function openConnectionDialog(from, to) {
   const toInfo = describeEndpoint(state.project, to);
   state.connectionDraft = { from, to };
   els.connectionEndpoints.innerHTML = `
-    <div><strong>From:</strong> ${escapeHtml(fromInfo.deviceName)} / ${escapeHtml(fromInfo.portName)}</div>
-    <div><strong>To:</strong> ${escapeHtml(toInfo.deviceName)} / ${escapeHtml(toInfo.portName)}</div>
+    <div><strong>${escapeHtml(t("from"))}:</strong> ${escapeHtml(fromInfo.deviceName)} / ${escapeHtml(fromInfo.portName)}</div>
+    <div><strong>${escapeHtml(t("to"))}:</strong> ${escapeHtml(toInfo.deviceName)} / ${escapeHtml(toInfo.portName)}</div>
   `;
   els.cableTypeSelect.innerHTML = CABLE_TYPES
-    .map((type) => `<option value="${type.id}">${escapeHtml(type.name)}</option>`)
+    .map((type) => `<option value="${type.id}">${escapeHtml(cableLabel(type.id))}</option>`)
     .join("");
   els.connectionForm.reset();
   els.cableTypeSelect.value = "bnc";
@@ -649,13 +1110,13 @@ function downloadProject() {
 async function openProject() {
   if ("showOpenFilePicker" in window) {
     const [handle] = await window.showOpenFilePicker({
-      types: [{ description: "Lab wiring project", accept: { "application/json": [".json"] } }],
+      types: [{ description: t("filePickerDesc"), accept: { "application/json": [".json"] } }],
       multiple: false
     });
     const file = await handle.getFile();
     const text = await file.text();
     setProject(parseProjectJson(text), { fileName: file.name, fileHandle: handle, dirty: false });
-    showToast(`Opened ${file.name}`);
+    showToast(t("openedFile", { file: file.name }));
     return;
   }
   els.fallbackFileInput.click();
@@ -668,7 +1129,7 @@ async function saveProject() {
     await writable.close();
     state.dirty = false;
     updateStatus();
-    showToast(`Saved ${state.fileName}`);
+    showToast(t("savedFile", { file: state.fileName }));
     return;
   }
   if ("showSaveFilePicker" in window) {
@@ -683,7 +1144,7 @@ async function saveProjectAs() {
     const suggestedName = state.fileName || `${state.project.metadata.title || "lab_wiring"}.labwire.json`;
     const handle = await window.showSaveFilePicker({
       suggestedName,
-      types: [{ description: "Lab wiring project", accept: { "application/json": [".json"] } }]
+      types: [{ description: t("filePickerDesc"), accept: { "application/json": [".json"] } }]
     });
     state.fileHandle = handle;
     state.fileName = handle.name;
@@ -695,26 +1156,48 @@ async function saveProjectAs() {
 
 async function loadExample() {
   const response = await fetch("../../../linker/Lab_Wiring_Connector/projects/example_lab_wiring.labwire.json");
-  if (!response.ok) throw new Error(`Failed to load example: ${response.status}`);
+  if (!response.ok) throw new Error(t("failedLoadExample", { status: response.status }));
   const project = parseProjectJson(await response.text());
   setProject(project, { fileName: "example_lab_wiring.labwire.json", fileHandle: null, dirty: true });
-  showToast("Example loaded. Use Save As to keep a copy.");
+  showToast(t("exampleLoaded"));
 }
 
 function validateAndReport() {
   const result = validateProject(state.project);
   if (result.ok) {
-    showToast(result.warnings.length ? `Valid with ${result.warnings.length} warning(s).` : "Project file is valid.");
+    showToast(result.warnings.length ? t("validWithWarnings", { count: result.warnings.length }) : t("validProject"));
   } else {
-    showToast(`Validation failed: ${result.errors[0]}`);
+    showToast(t("validationFailed", { message: result.errors[0] }));
   }
   renderSummary();
 }
 
+function createLocalizedPorts({ genericCount = 0, inputCount = 0, outputCount = 0 }) {
+  const ports = [];
+  for (let index = 1; index <= Number(genericCount || 0); index += 1) {
+    ports.push(createPort({ name: t("defaultInterface", { index }), direction: "bidirectional" }));
+  }
+  for (let index = 1; index <= Number(inputCount || 0); index += 1) {
+    ports.push(createPort({ name: t("defaultInput", { index }), direction: "input" }));
+  }
+  for (let index = 1; index <= Number(outputCount || 0); index += 1) {
+    ports.push(createPort({ name: t("defaultOutput", { index }), direction: "output" }));
+  }
+  return ports;
+}
+
+function resetDeviceForm() {
+  els.deviceForm.reset();
+  els.deviceForm.elements.name.value = t("newInstrument");
+}
+
 function bindEvents() {
+  for (const button of els.languageButtons) {
+    button.addEventListener("click", () => setLanguage(button.dataset.lang));
+  }
   els.newProjectBtn.addEventListener("click", () => {
-    setProject(createEmptyProject(), { dirty: true });
-    showToast("New project created.");
+    setProject(createEmptyProject(t("untitled")), { dirty: true });
+    showToast(t("newProjectCreated"));
   });
   els.openProjectBtn.addEventListener("click", () => openProject().catch((error) => {
     if (error.name !== "AbortError") showToast(error.message);
@@ -728,11 +1211,11 @@ function bindEvents() {
   els.loadExampleBtn.addEventListener("click", () => loadExample().catch((error) => showToast(error.message)));
   els.validateBtn.addEventListener("click", validateAndReport);
   els.addDeviceBtn.addEventListener("click", () => {
-    els.deviceForm.reset();
+    resetDeviceForm();
     els.deviceDialog.showModal();
   });
   els.projectTitleInput.addEventListener("change", () => {
-    state.project.metadata.title = els.projectTitleInput.value.trim() || "Untitled lab wiring";
+    state.project.metadata.title = els.projectTitleInput.value.trim() || t("untitled");
     markDirty();
     render();
   });
@@ -754,7 +1237,7 @@ function bindEvents() {
   window.addEventListener("pointerup", onPointerUp);
   els.copySummaryBtn.addEventListener("click", async () => {
     await navigator.clipboard.writeText(els.summaryOutput.value);
-    showToast("AI summary copied.");
+    showToast(t("aiSummaryCopied"));
   });
   els.fallbackFileInput.addEventListener("change", async () => {
     const [file] = els.fallbackFileInput.files;
@@ -767,14 +1250,15 @@ function bindEvents() {
     if (event.submitter?.value === "cancel") return;
     event.preventDefault();
     const form = new FormData(els.deviceForm);
+    const genericCount = Number(form.get("genericCount"));
+    const inputCount = Number(form.get("inputCount"));
+    const outputCount = Number(form.get("outputCount"));
     const rect = els.canvasViewport.getBoundingClientRect();
     const center = screenToWorld(rect.left + rect.width / 2, rect.top + rect.height / 2);
     const device = createDevice(state.project, {
       name: form.get("name"),
       kind: form.get("kind"),
-      genericCount: Number(form.get("genericCount")),
-      inputCount: Number(form.get("inputCount")),
-      outputCount: Number(form.get("outputCount")),
+      ports: createLocalizedPorts({ genericCount, inputCount, outputCount }),
       location: form.get("location"),
       notes: form.get("notes"),
       x: Math.max(20, Math.round(center.x - 120)),
@@ -814,9 +1298,9 @@ function bindEvents() {
       markDirty();
       els.connectionDialog.close();
       render();
-      showToast("Connection created.");
+      showToast(t("connectionCreated"));
     } catch (error) {
-      showToast(error.message);
+      showToast(activeLanguage === "zh" ? t("invalidConnection") : error.message);
     }
   });
 
