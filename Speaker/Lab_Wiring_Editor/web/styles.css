@@ -344,6 +344,10 @@ select:focus {
   inset: 0;
 }
 
+.device-layer {
+  pointer-events: none;
+}
+
 .connection-path {
   fill: none;
   stroke-linecap: round;
@@ -362,9 +366,34 @@ select:focus {
 
 .connection-hit {
   fill: none;
-  stroke: transparent;
+  stroke: rgba(15, 23, 42, 0.01);
   stroke-width: 16;
+  pointer-events: all;
   cursor: pointer;
+}
+
+.connection-quick-actions {
+  position: absolute;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: minmax(120px, 170px) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--strong-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+  transform: translate(-50%, -110%);
+}
+
+.connection-quick-actions[hidden] {
+  display: none;
+}
+
+.connection-quick-actions select,
+.connection-quick-actions button {
+  min-height: 30px;
 }
 
 .connection-path.selected {
@@ -382,6 +411,7 @@ select:focus {
 
 .device-node {
   position: absolute;
+  pointer-events: auto;
   width: 240px;
   min-height: 148px;
   background: #fff;

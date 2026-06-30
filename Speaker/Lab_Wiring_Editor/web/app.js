@@ -20,6 +20,7 @@ const $ = (selector) => document.querySelector(selector);
 const svgNS = "http://www.w3.org/2000/svg";
 const LANGUAGE_STORAGE_KEY = "hku.labWiringEditor.language";
 const BACKUP_ENDPOINT = "/api/lab-wiring/backups";
+const DEFAULT_PROJECT_ENDPOINT = "/api/lab-wiring/projects/default";
 const AUTO_SAVE_INTERVAL_MS = 60_000;
 
 const translations = {
@@ -33,7 +34,7 @@ const translations = {
     open: "Open",
     openTitle: "Open .labwire.json",
     save: "Save",
-    saveTitle: "Save current project",
+    saveTitle: "Save current project. Unsaved projects go to the default project folder.",
     saveAs: "Save As",
     saveAsTitle: "Save as new project",
     example: "Example",
@@ -133,6 +134,8 @@ const translations = {
     validationFailed: "Validation failed: {message}",
     backupSaved: "Backup saved: {file}",
     backupUnavailable: "Backup server is unavailable. Start the Lab Wiring Editor launcher for backups.",
+    savedDefaultFile: "Saved to default folder: {file}",
+    defaultSaveUnavailable: "Default save is unavailable. Falling back to Save As.",
     autosavedFile: "Autosaved {file}",
     autosavedDraft: "Autosaved draft backup.",
     codeApplied: "Code applied to graph.",
@@ -191,7 +194,7 @@ const translations = {
     open: "打开",
     openTitle: "打开 .labwire.json",
     save: "保存",
-    saveTitle: "保存当前工程",
+    saveTitle: "保存当前工程。未另存的工程会保存到默认工程文件夹。",
     saveAs: "另存为",
     saveAsTitle: "另存为新工程",
     example: "示例",
@@ -291,6 +294,8 @@ const translations = {
     validationFailed: "校验失败: {message}",
     backupSaved: "已保存备份: {file}",
     backupUnavailable: "备份服务器不可用。请用 Lab Wiring Editor 启动脚本打开网页以启用备份。",
+    savedDefaultFile: "已保存到默认文件夹: {file}",
+    defaultSaveUnavailable: "默认保存不可用，将改用另存为。",
     autosavedFile: "已自动保存 {file}",
     autosavedDraft: "已自动保存草稿备份。",
     codeApplied: "代码已应用到图。",
@@ -426,6 +431,7 @@ const els = {
   world: $("#world"),
   connectionLayer: $("#connectionLayer"),
   deviceLayer: $("#deviceLayer"),
+  connectionQuickActions: $("#connectionQuickActions"),
   interactionStatus: $("#interactionStatus"),
   zoomStatus: $("#zoomStatus"),
   zoomOutBtn: $("#zoomOutBtn"),
@@ -458,6 +464,7 @@ const state = {
   dirty: false,
   selectedDeviceId: null,
   selectedConnectionId: null,
+  connectionQuickPoint: null,
   pendingPort: null,
   connectionDraft: null,
   search: "",
@@ -471,6 +478,8 @@ const state = {
   autoSaveTimer: null,
   lastSavedText: "",
   lastAutoSaveText: "",
+  defaultProjectFileName: "",
+  defaultProjectPath: "",
   backupWarningShown: false
 };
 
@@ -617,7 +626,7 @@ function currentProjectText() {
 }
 
 function currentProjectFileName() {
-  const raw = state.fileName || state.project.metadata?.title || "lab_wiring";
+  const raw = state.defaultProjectFileName || state.fileName || state.project.metadata?.title || "lab_wiring";
   return String(raw).toLowerCase().endsWith(".json") ? String(raw) : `${raw}.labwire.json`;
 }
 
@@ -652,6 +661,36 @@ async function writeBackup(reason, content = currentProjectText(), { quiet = tru
   }
 }
 
+async function writeDefaultProject(content = currentProjectText(), { quiet = true, mode = "manual" } = {}) {
+  try {
+    const response = await fetch(DEFAULT_PROJECT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: currentProjectFileName(),
+        reason: mode,
+        content
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+    const result = await response.json();
+    state.defaultProjectFileName = result.fileName || currentProjectFileName();
+    state.defaultProjectPath = result.relativePath || "";
+    state.fileName = state.defaultProjectFileName;
+    state.fileHandle = null;
+    if (!quiet) {
+      showToast(t("savedDefaultFile", { file: result.relativePath || state.defaultProjectFileName }));
+    }
+    return result;
+  } catch (error) {
+    console.warn("Lab wiring default save failed", error);
+    if (!quiet) showToast(t("defaultSaveUnavailable"));
+    return null;
+  }
+}
+
 function updateAutoSaveButton() {
   if (!els.autoSaveToggleBtn) return;
   els.autoSaveToggleBtn.textContent = t(state.autoSaveEnabled ? "autoSaveOn" : "autoSaveOff");
@@ -665,18 +704,29 @@ function markDirty() {
   updateStatus();
 }
 
-function setProject(project, { fileName = "", fileHandle = null, dirty = false, sourceText = "", keepSavedText = false } = {}) {
+function setProject(project, {
+  fileName = "",
+  fileHandle = null,
+  dirty = false,
+  sourceText = "",
+  keepSavedText = false,
+  defaultProjectFileName = "",
+  defaultProjectPath = ""
+} = {}) {
   state.project = project;
   state.fileName = fileName;
   state.fileHandle = fileHandle;
   state.dirty = dirty;
   state.selectedDeviceId = null;
   state.selectedConnectionId = null;
+  state.connectionQuickPoint = null;
   state.pendingPort = null;
   state.connectionDraft = null;
   state.zoom = project.canvas?.zoom || 1;
   state.pan = project.canvas?.pan || { x: 20, y: 20 };
   state.codeDraftDirty = false;
+  state.defaultProjectFileName = defaultProjectFileName;
+  state.defaultProjectPath = defaultProjectPath;
   render();
   if (!keepSavedText) {
     state.lastSavedText = sourceText || (dirty ? "" : currentProjectText());
@@ -934,6 +984,7 @@ function renderDeviceLayer() {
 
 function renderConnections() {
   els.connectionLayer.replaceChildren();
+  renderConnectionQuickActions();
   for (const [index, connection] of state.project.connections.entries()) {
     const from = endpointPosition(connection.from);
     const to = endpointPosition(connection.to);
@@ -945,7 +996,7 @@ function renderConnections() {
     hit.setAttribute("d", pathData);
     hit.setAttribute("class", "connection-hit");
     hit.dataset.connectionId = connection.id;
-    hit.addEventListener("click", () => selectConnection(connection.id));
+    hit.addEventListener("click", (event) => selectConnection(connection.id, event));
     els.connectionLayer.append(hit);
 
     const backdrop = document.createElementNS(svgNS, "path");
@@ -961,7 +1012,7 @@ function renderConnections() {
     path.setAttribute("stroke-width", cable.stroke || 3);
     if (cable.dash) path.setAttribute("stroke-dasharray", cable.dash);
     path.dataset.connectionId = connection.id;
-    path.addEventListener("click", () => selectConnection(connection.id));
+    path.addEventListener("click", (event) => selectConnection(connection.id, event));
     els.connectionLayer.append(path);
 
     const label = connection.label || connection.name;
@@ -972,10 +1023,48 @@ function renderConnections() {
       text.setAttribute("text-anchor", "middle");
       text.setAttribute("class", "connection-label");
       text.textContent = label;
-      text.addEventListener("click", () => selectConnection(connection.id));
+      text.addEventListener("click", (event) => selectConnection(connection.id, event));
       els.connectionLayer.append(text);
     }
   }
+}
+
+function renderConnectionQuickActions() {
+  const panel = els.connectionQuickActions;
+  if (!panel) return;
+  const connection = state.project.connections.find((item) => item.id === state.selectedConnectionId);
+  if (!connection || !state.connectionQuickPoint) {
+    panel.hidden = true;
+    panel.innerHTML = "";
+    return;
+  }
+
+  const rect = els.canvasViewport.getBoundingClientRect();
+  const safeX = Math.min(Math.max(state.connectionQuickPoint.x, 96), Math.max(96, rect.width - 96));
+  const safeY = Math.min(Math.max(state.connectionQuickPoint.y, 54), Math.max(54, rect.height - 18));
+  panel.style.left = `${safeX}px`;
+  panel.style.top = `${safeY}px`;
+  panel.innerHTML = `
+    <select id="quickConnectionTypeSelect" title="${escapeHtml(t("lineType"))}">
+      ${CABLE_TYPES.map((type) => `<option value="${type.id}" ${connection.cableType === type.id ? "selected" : ""}>${escapeHtml(cableLabel(type.id))}</option>`).join("")}
+    </select>
+    <button id="quickDeleteConnectionBtn" class="danger" type="button">${escapeHtml(t("delete"))}</button>
+  `;
+  panel.hidden = false;
+  $("#quickConnectionTypeSelect")?.addEventListener("change", (event) => {
+    connection.cableType = event.target.value;
+    const cable = CABLE_TYPES.find((item) => item.id === event.target.value);
+    if (cable) connection.color = cable.color;
+    markDirty();
+    render();
+  });
+  $("#quickDeleteConnectionBtn")?.addEventListener("click", () => {
+    deleteConnection(state.project, connection.id);
+    state.selectedConnectionId = null;
+    state.connectionQuickPoint = null;
+    markDirty();
+    render();
+  });
 }
 
 function renderDeviceList() {
@@ -1145,6 +1234,7 @@ function bindConnectionInspector(connection) {
   $("#deleteConnectionBtn")?.addEventListener("click", () => {
     deleteConnection(state.project, connection.id);
     state.selectedConnectionId = null;
+    state.connectionQuickPoint = null;
     markDirty();
     render();
   });
@@ -1227,7 +1317,7 @@ async function applyCodeToProject() {
   if (state.rightView !== "code") return;
   const previousText = currentProjectText();
   const savedText = state.lastSavedText;
-  const { fileName, fileHandle } = state;
+  const { fileName, fileHandle, defaultProjectFileName, defaultProjectPath } = state;
   try {
     const parsed = parseProjectJson(els.summaryOutput.value);
     await writeBackup("before-code-apply", previousText, { quiet: true });
@@ -1235,7 +1325,9 @@ async function applyCodeToProject() {
       fileName,
       fileHandle,
       dirty: true,
-      keepSavedText: true
+      keepSavedText: true,
+      defaultProjectFileName,
+      defaultProjectPath
     });
     state.lastSavedText = savedText;
     state.lastAutoSaveText = "";
@@ -1277,13 +1369,23 @@ function render() {
 function selectDevice(deviceId) {
   state.selectedDeviceId = deviceId;
   state.selectedConnectionId = null;
+  state.connectionQuickPoint = null;
   render();
 }
 
-function selectConnection(connectionId) {
+function selectConnection(connectionId, event = null) {
   state.selectedConnectionId = connectionId;
   state.selectedDeviceId = null;
   state.pendingPort = null;
+  if (event) {
+    const rect = els.canvasViewport.getBoundingClientRect();
+    state.connectionQuickPoint = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+  } else {
+    state.connectionQuickPoint = null;
+  }
   els.interactionStatus.textContent = t("connectionSelected");
   render();
 }
@@ -1292,6 +1394,7 @@ function handlePortClick(deviceId, portId) {
   const endpoint = { deviceId, portId };
   state.selectedDeviceId = deviceId;
   state.selectedConnectionId = null;
+  state.connectionQuickPoint = null;
   if (!state.pendingPort) {
     state.pendingPort = endpoint;
     const info = describeEndpoint(state.project, endpoint);
@@ -1357,7 +1460,7 @@ function startDeviceDrag(event) {
 
 function startPan(event) {
   if (event.button !== 0) return;
-  if (event.target.closest(".device-node") || event.target.closest(".connection-hit") || event.target.closest(".connection-path")) return;
+  if (event.target.closest(".device-node") || event.target.closest(".connection-hit") || event.target.closest(".connection-path") || event.target.closest(".connection-quick-actions")) return;
   state.panDrag = {
     x: event.clientX,
     y: event.clientY,
@@ -1465,9 +1568,30 @@ async function saveProject(mode = "manual") {
     return;
   }
   if (mode === "autosave") {
+    if (state.defaultProjectFileName) {
+      await backupPreviousVersion("before-autosave-default", nextText);
+      const result = await writeDefaultProject(nextText, { quiet: true, mode });
+      if (result) {
+        state.lastSavedText = nextText;
+        state.lastAutoSaveText = nextText;
+        state.dirty = false;
+        updateStatus();
+        showToast(t("autosavedFile", { file: state.fileName }));
+        return;
+      }
+    }
     await writeBackup("autosave-draft", nextText, { quiet: true });
     state.lastAutoSaveText = nextText;
     showToast(t("autosavedDraft"));
+    return;
+  }
+  await backupPreviousVersion("before-default-save", nextText);
+  const defaultResult = await writeDefaultProject(nextText, { quiet: false, mode });
+  if (defaultResult) {
+    state.lastSavedText = nextText;
+    state.lastAutoSaveText = nextText;
+    state.dirty = false;
+    updateStatus();
     return;
   }
   if ("showSaveFilePicker" in window) {
@@ -1486,6 +1610,8 @@ async function saveProjectAs(mode = "manual") {
     });
     state.fileHandle = handle;
     state.fileName = handle.name;
+    state.defaultProjectFileName = "";
+    state.defaultProjectPath = "";
     await saveProject(mode);
     return;
   }
@@ -1767,9 +1893,10 @@ function bindEvents() {
       state.connectionDraft = null;
       render();
     }
-    if (event.key === "Delete" && state.selectedConnectionId) {
+  if (event.key === "Delete" && state.selectedConnectionId) {
       deleteConnection(state.project, state.selectedConnectionId);
       state.selectedConnectionId = null;
+      state.connectionQuickPoint = null;
       markDirty();
       render();
     }

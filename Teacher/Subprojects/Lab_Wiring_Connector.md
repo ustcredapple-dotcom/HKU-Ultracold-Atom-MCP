@@ -40,11 +40,13 @@ Speaker/Lab_Wiring_Editor
 - 打开已有 `.labwire.json` 工程文件。
 - `Save`: 修改当前打开的工程文件。
 - `Save As`: 另存为新的工程文件。
+- 默认保存目录: `linker/Lab_Wiring_Connector/projects/User_Projects`。当工程没有当前文件句柄时，点击 `Save` 会写入这个目录。
 - 加载示例工程。
 - 校验工程文件。
 - 查看 AI 摘要。
 - 在右下角 `代码 / Code` 视图直接编辑 `.labwire.json`，点击 `应用 / Apply` 后由代码重新生成图。
 - 自动保存模式默认开启：打开工程时先备份一次；每 1 分钟自动保存改动；每次正常保存或自动写入当前文件前，先把上一版本备份。
+- 点击已经连接的线会选中该连接，右侧属性面板可以修改线型或删除；画布上也会弹出快捷工具条，可直接修改线型或删除连接。
 
 双语模式说明:
 
@@ -96,6 +98,14 @@ linker/Lab_Wiring_Connector/schema/lab_wiring_project.schema.json
 ```text
 linker/Lab_Wiring_Connector/projects/example_lab_wiring.labwire.json
 ```
+
+用户工程默认保存目录:
+
+```text
+linker/Lab_Wiring_Connector/projects/User_Projects
+```
+
+这个目录用于当前正在维护的 `.labwire.json` 工程文件。历史版本和自动备份仍然放在 `History/Tool_History/Lab_Wiring_Connector_Backups`。
 
 ## 打开网页
 

@@ -99,7 +99,25 @@ Recommended extension:
 Use:
 
 - `Open`: load an existing project file.
-- `Save`: write back to the currently opened file when the browser supports File System Access API.
+- `Save`: write back to the currently opened file when the browser supports File System Access API. If the project has no current file handle, it is saved to the default project folder.
 - `Save As`: choose a new project file.
 
-If the browser does not support direct save, the editor falls back to downloading the JSON file.
+If the local editor server and the browser file save APIs are both unavailable, the editor falls back to downloading the JSON file.
+
+## Default Save Folder
+
+The default project folder is:
+
+```text
+linker/Lab_Wiring_Connector/projects/User_Projects
+```
+
+This folder is the best default location because `.labwire.json` files are AI-readable lab topology knowledge owned by the linker engine. `Speaker` is only the web editor, and `History/Tool_History` is for backups and older versions.
+
+Before this default-save feature, the editor did not have a fixed default folder. The location was controlled by the browser: either the file picker location, the current browser file handle, or the browser downloads folder.
+
+## Connection Editing
+
+Click an existing line to select it. The right inspector lets you edit its name, label, line type, signal type, notes, or delete it.
+
+After selection, a small quick-action panel also appears near the clicked line so you can directly change the line type or delete the connection from the canvas.

@@ -18,6 +18,12 @@ Speaker/Lab_Wiring_Editor
 
 The editor calls this linker engine and reads/writes `.labwire.json` project files.
 
+User-created projects are saved by default in:
+
+```text
+linker/Lab_Wiring_Connector/projects/User_Projects
+```
+
 ## Project File
 
 Recommended extension:
