@@ -69,4 +69,9 @@ The default system `node.exe` was blocked by Windows permissions, so validation 
 
 ## Remaining
 
-- Commit and push the finished changes.
+- Main implementation commit: `d37fb60` (`Enhance lab wiring editor autosave and code view`).
+- Pushed to `origin/main` on GitHub:
+
+```text
+https://github.com/ustcredapple-dotcom/HKU-Ultracold-Atom-MCP
+```
