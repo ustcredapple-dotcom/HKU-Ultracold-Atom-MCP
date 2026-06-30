@@ -37,6 +37,30 @@ The language choice affects:
 
 Existing project data is not translated automatically, because device names and port names are laboratory records.
 
+## Port Types
+
+Each port can carry a `portType`, such as:
+
+- TTL
+- DAC
+- ADC
+- RF
+- Analog
+- Digital
+- Optical
+- Ethernet
+- USB
+- Power
+- Custom
+
+Use the device inspector to edit a port's type. Use `Add Type` to add a project-specific custom port type. Custom port types are saved inside the `.labwire.json` project file.
+
+## Layout
+
+Use `Arrange` in the top toolbar to automatically organize devices. The editor places connected devices into left-to-right layers and gives large devices more vertical room.
+
+Connections are drawn as clean rounded orthogonal lines with a subtle white backing stroke for readability.
+
 ## Project Files
 
 Recommended extension:

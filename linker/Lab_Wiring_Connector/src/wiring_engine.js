@@ -4,13 +4,27 @@ export const SCHEMA_VERSION = 1;
 export const CABLE_TYPES = [
   { id: "bnc", name: "BNC", color: "#2563eb", stroke: 3, dash: "" },
   { id: "sma", name: "SMA/RF", color: "#dc2626", stroke: 3, dash: "" },
-  { id: "ttl", name: "TTL trigger", color: "#16a34a", stroke: 3, dash: "8 5" },
+  { id: "ttl", name: "TTL trigger", color: "#15803d", stroke: 3, dash: "" },
   { id: "fiber", name: "Optical fiber", color: "#9333ea", stroke: 3, dash: "2 5" },
-  { id: "free-space", name: "Free-space beam", color: "#ea580c", stroke: 4, dash: "12 6" },
+  { id: "free-space", name: "Free-space beam", color: "#ea580c", stroke: 4, dash: "10 6" },
   { id: "ethernet", name: "Ethernet", color: "#0f766e", stroke: 3, dash: "" },
   { id: "usb", name: "USB", color: "#475569", stroke: 3, dash: "" },
   { id: "power", name: "Power", color: "#111827", stroke: 4, dash: "" },
   { id: "custom", name: "Custom", color: "#64748b", stroke: 3, dash: "4 4" }
+];
+
+export const DEFAULT_PORT_TYPES = [
+  { id: "ttl", name: "TTL", color: "#15803d", description: "Digital trigger/control port." },
+  { id: "dac", name: "DAC", color: "#2563eb", description: "Digital-to-analog output." },
+  { id: "adc", name: "ADC", color: "#0284c7", description: "Analog-to-digital input." },
+  { id: "rf", name: "RF", color: "#dc2626", description: "Radio-frequency signal port." },
+  { id: "analog", name: "Analog", color: "#7c3aed", description: "General analog signal port." },
+  { id: "digital", name: "Digital", color: "#16a34a", description: "General digital signal port." },
+  { id: "optical", name: "Optical", color: "#ea580c", description: "Optical beam or fiber interface." },
+  { id: "ethernet", name: "Ethernet", color: "#0f766e", description: "Network interface." },
+  { id: "usb", name: "USB", color: "#475569", description: "USB interface." },
+  { id: "power", name: "Power", color: "#111827", description: "Power input or output." },
+  { id: "custom", name: "Custom", color: "#64748b", description: "User-defined or unspecified port type." }
 ];
 
 export function nowIso() {
@@ -22,6 +36,74 @@ export function makeId(prefix) {
     return `${prefix}_${globalThis.crypto.randomUUID().slice(0, 8)}`;
   }
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function slugifyId(value, prefix = "custom") {
+  const slug = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 48);
+  return slug ? `${prefix}_${slug}` : makeId(prefix);
+}
+
+export function defaultPortTypes() {
+  return DEFAULT_PORT_TYPES.map((item) => ({ ...item, builtin: true }));
+}
+
+export function ensurePortTypes(project) {
+  const merged = new Map();
+  for (const item of defaultPortTypes()) merged.set(item.id, item);
+  for (const item of project.portTypes || []) {
+    if (!item?.id) continue;
+    merged.set(item.id, {
+      name: item.name || item.id,
+      color: item.color || "#64748b",
+      description: item.description || "",
+      builtin: Boolean(item.builtin),
+      ...item
+    });
+  }
+  project.portTypes = [...merged.values()];
+  return project.portTypes;
+}
+
+export function getPortType(project, portTypeId) {
+  ensurePortTypes(project);
+  return project.portTypes.find((item) => item.id === portTypeId) || project.portTypes.find((item) => item.id === "custom");
+}
+
+export function createPortType(project, spec = {}) {
+  ensurePortTypes(project);
+  const id = spec.id || slugifyId(spec.name, "porttype");
+  const existing = project.portTypes.find((item) => item.id === id);
+  if (existing) return existing;
+  const portType = {
+    id,
+    name: String(spec.name || "Custom").trim(),
+    color: spec.color || "#64748b",
+    description: spec.description || "",
+    builtin: false
+  };
+  project.portTypes.push(portType);
+  touchProject(project);
+  return portType;
+}
+
+function inferPortType(port) {
+  const text = [port.name, port.signalType, port.medium, port.connectorType, port.notes].join(" ").toLowerCase();
+  if (text.includes("ttl")) return "ttl";
+  if (text.includes("dac")) return "dac";
+  if (text.includes("adc")) return "adc";
+  if (text.includes("rf") || text.includes("sma")) return "rf";
+  if (text.includes("analog")) return "analog";
+  if (text.includes("digital")) return "digital";
+  if (text.includes("optical") || text.includes("fiber") || text.includes("beam")) return "optical";
+  if (text.includes("ethernet")) return "ethernet";
+  if (text.includes("usb")) return "usb";
+  if (text.includes("power")) return "power";
+  return "custom";
 }
 
 export function createEmptyProject(title = "Untitled lab wiring") {
@@ -38,6 +120,7 @@ export function createEmptyProject(title = "Untitled lab wiring") {
       createdAt: timestamp,
       updatedAt: timestamp
     },
+    portTypes: defaultPortTypes(),
     devices: [],
     connections: [],
     canvas: {
@@ -53,11 +136,12 @@ export function touchProject(project) {
   return project;
 }
 
-export function createPort({ name, direction, signalType = "", medium = "", connectorType = "", notes = "" }) {
+export function createPort({ name, direction, portType = "custom", signalType = "", medium = "", connectorType = "", notes = "" }) {
   return {
     id: makeId("port"),
     name: String(name || "Port").trim(),
     direction,
+    portType,
     signalType,
     medium,
     connectorType,
@@ -68,13 +152,13 @@ export function createPort({ name, direction, signalType = "", medium = "", conn
 export function createDefaultPorts({ genericCount = 0, inputCount = 0, outputCount = 0 }) {
   const ports = [];
   for (let index = 1; index <= Number(genericCount || 0); index += 1) {
-    ports.push(createPort({ name: `Interface ${index}`, direction: "bidirectional" }));
+    ports.push(createPort({ name: `Interface ${index}`, direction: "bidirectional", portType: "custom" }));
   }
   for (let index = 1; index <= Number(inputCount || 0); index += 1) {
-    ports.push(createPort({ name: `Input ${index}`, direction: "input" }));
+    ports.push(createPort({ name: `Input ${index}`, direction: "input", portType: "custom" }));
   }
   for (let index = 1; index <= Number(outputCount || 0); index += 1) {
-    ports.push(createPort({ name: `Output ${index}`, direction: "output" }));
+    ports.push(createPort({ name: `Output ${index}`, direction: "output", portType: "custom" }));
   }
   return ports;
 }
@@ -204,10 +288,14 @@ export function validateProject(project) {
     if (!Array.isArray(device.ports)) errors.push(`Device ${device.id} ports must be an array.`);
     const portIds = new Set();
     for (const port of device.ports || []) {
+      if (!port.portType) port.portType = inferPortType(port);
       if (!port.id) errors.push(`Device ${device.id} has a port without id.`);
       if (portIds.has(port.id)) errors.push(`Duplicate port id on ${device.id}: ${port.id}`);
       if (!["input", "output", "bidirectional"].includes(port.direction)) {
         errors.push(`Port ${device.id}.${port.id} has invalid direction: ${port.direction}`);
+      }
+      if (port.portType && !getPortType(project, port.portType)) {
+        warnings.push(`Port ${device.id}.${port.id} references an unknown port type: ${port.portType}`);
       }
       portIds.add(port.id);
       endpointKeys.add(`${device.id}.${port.id}`);
@@ -253,6 +341,12 @@ export function normalizeProject(project) {
   };
   project.devices = Array.isArray(project.devices) ? project.devices : [];
   project.connections = Array.isArray(project.connections) ? project.connections : [];
+  ensurePortTypes(project);
+  for (const device of project.devices) {
+    for (const port of device.ports || []) {
+      if (!port.portType) port.portType = inferPortType(port);
+    }
+  }
   project.canvas = {
     zoom: 1,
     pan: { x: 0, y: 0 },
@@ -278,7 +372,8 @@ export function summarizeProject(project) {
   for (const device of project.devices) {
     lines.push(`- ${device.name} (${device.kind || "device"}, id=${device.id})`);
     for (const port of device.ports || []) {
-      const details = [port.direction, port.signalType, port.medium, port.connectorType].filter(Boolean).join(", ");
+      const portType = getPortType(project, port.portType);
+      const details = [port.direction, portType?.name, port.signalType, port.medium, port.connectorType].filter(Boolean).join(", ");
       lines.push(`  - ${port.name} [${details || "port"}]`);
     }
   }

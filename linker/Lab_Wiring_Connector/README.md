@@ -32,9 +32,12 @@ Core sections:
 
 - `metadata`: title, description, author, timestamps.
 - `devices`: physical instruments or optical/electrical components.
-- `ports`: named interfaces on each device, with direction and optional physical details.
+- `portTypes`: available port categories, including built-in and project-specific custom types.
+- `ports`: named interfaces on each device, with direction, port type, and optional physical details.
 - `connections`: wires, fibers, triggers, RF cables, BNC, SMA, TTL, optical paths, etc.
 - `canvas`: layout information for the human editor. AI may ignore this if only reasoning about wiring.
+
+Built-in port types include TTL, DAC, ADC, RF, Analog, Digital, Optical, Ethernet, USB, Power, and Custom. Users may add custom types, which are stored in the project file.
 
 ## Safety Note
 

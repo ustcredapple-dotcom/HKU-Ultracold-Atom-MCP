@@ -32,8 +32,11 @@ Speaker/Lab_Wiring_Editor
 - 中英双语界面切换。
 - 插入新的方块，方块代表实际仪器或器件。
 - 设置方块的接口数量、输入数量、输出数量。
-- 给每个接口命名，并设置方向、信号类型、连接器类型等。
+- 给每个接口命名，并设置方向、端口种类、信号类型、连接器类型等。
+- 使用默认端口种类，例如 TTL、DAC、ADC、RF、模拟、数字、光学、以太网、USB、电源。
+- 添加工程内自定义端口种类。
 - 点击两个端口后选择线型，创建连接。
+- 自动整理器件布局。
 - 打开已有 `.labwire.json` 工程文件。
 - `Save`: 修改当前打开的工程文件。
 - `Save As`: 另存为新的工程文件。
@@ -61,8 +64,24 @@ Speaker/Lab_Wiring_Editor
 - `metadata`: 工程标题、描述、创建时间、更新时间。
 - `devices`: 器件列表。每个器件包含 `id`、`name`、`kind`、位置、备注和端口。
 - `ports`: 每个器件下的接口，包含 `name`、`direction`、`signalType`、`medium`、`connectorType`、`notes`。
+- `portTypes`: 工程内可用的端口种类目录，包括默认类型和用户自定义类型。
 - `connections`: 两个端口之间的线，包含 `from`、`to`、`cableType`、`signalType`、`label`、`notes`。
 - `canvas`: 画布布局信息，方便人类重新打开工程继续编辑。
+
+端口对象可以包含:
+
+```json
+{
+  "id": "port_ttl0",
+  "name": "TTL0",
+  "direction": "output",
+  "portType": "ttl",
+  "signalType": "TTL trigger",
+  "connectorType": "SMA"
+}
+```
+
+自定义端口种类会写入 `portTypes`，因此 AI 读取工程文件时可以知道这些类型是用户定义的实验室概念。
 
 schema 位于:
 
@@ -91,6 +110,16 @@ http://127.0.0.1:8765/Speaker/Lab_Wiring_Editor/web/index.html
 ```
 
 本地服务器是必要的，因为网页需要读取 `linker` 中的 ES module，并使用浏览器的文件保存能力。
+
+## 自动整理与连线风格
+
+网页顶部 `整理 / Arrange` 会根据连接方向自动布置器件:
+
+- 有连接关系时，起点器件放在左侧，目标器件放在右侧或更右侧。
+- 无连接关系时，按网格排列。
+- 大量端口的器件会保留更高的纵向空间。
+
+连接线使用圆角折线和浅色底线，不再使用大幅弯曲线，便于在器件数量很多时阅读。
 
 ## 安全边界
 

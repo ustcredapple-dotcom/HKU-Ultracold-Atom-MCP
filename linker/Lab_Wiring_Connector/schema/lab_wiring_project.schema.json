@@ -34,6 +34,10 @@
       "type": "array",
       "items": { "$ref": "#/$defs/device" }
     },
+    "portTypes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/portType" }
+    },
     "connections": {
       "type": "array",
       "items": { "$ref": "#/$defs/connection" }
@@ -98,10 +102,23 @@
         "direction": {
           "enum": ["input", "output", "bidirectional"]
         },
+        "portType": { "type": "string" },
         "signalType": { "type": "string" },
         "medium": { "type": "string" },
         "connectorType": { "type": "string" },
         "notes": { "type": "string" }
+      }
+    },
+    "portType": {
+      "type": "object",
+      "required": ["id", "name"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "color": { "type": "string" },
+        "description": { "type": "string" },
+        "builtin": { "type": "boolean" }
       }
     },
     "connection": {

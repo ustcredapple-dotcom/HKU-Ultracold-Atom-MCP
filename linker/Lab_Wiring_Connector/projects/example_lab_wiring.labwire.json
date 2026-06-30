@@ -13,6 +13,36 @@
     "createdAt": "2026-06-30T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
   },
+  "portTypes": [
+    {
+      "id": "ttl",
+      "name": "TTL",
+      "color": "#15803d",
+      "description": "Digital trigger/control port.",
+      "builtin": true
+    },
+    {
+      "id": "dac",
+      "name": "DAC",
+      "color": "#2563eb",
+      "description": "Digital-to-analog output.",
+      "builtin": true
+    },
+    {
+      "id": "rf",
+      "name": "RF",
+      "color": "#dc2626",
+      "description": "Radio-frequency signal port.",
+      "builtin": true
+    },
+    {
+      "id": "custom",
+      "name": "Custom",
+      "color": "#64748b",
+      "description": "User-defined or unspecified port type.",
+      "builtin": true
+    }
+  ],
   "devices": [
     {
       "id": "device_artiq_kasli",
@@ -30,6 +60,7 @@
           "id": "port_ttl0",
           "name": "TTL0",
           "direction": "output",
+          "portType": "ttl",
           "signalType": "TTL trigger",
           "medium": "electrical",
           "connectorType": "SMA",
@@ -53,6 +84,7 @@
           "id": "port_trigger_in",
           "name": "Trigger In",
           "direction": "input",
+          "portType": "ttl",
           "signalType": "TTL trigger",
           "medium": "electrical",
           "connectorType": "BNC",

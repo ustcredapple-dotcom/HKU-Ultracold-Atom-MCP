@@ -338,6 +338,15 @@ select:focus {
   stroke-linecap: round;
   stroke-linejoin: round;
   cursor: pointer;
+  opacity: 0.92;
+}
+
+.connection-backdrop {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.86);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .connection-hit {
@@ -436,6 +445,7 @@ select:focus {
   gap: 6px;
   padding: 3px 7px;
   border: 1px solid #d9e1ec;
+  border-left: 4px solid var(--port-color, #64748b);
   border-radius: 5px;
   background: #ffffff;
   color: #223047;
@@ -451,6 +461,8 @@ select:focus {
 
 .port-button.output {
   justify-content: flex-end;
+  border-left-width: 1px;
+  border-right: 4px solid var(--port-color, #64748b);
 }
 
 .port-dot {
@@ -463,6 +475,20 @@ select:focus {
 }
 
 .port-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.port-type-badge {
+  max-width: 46px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--port-color, #64748b) 13%, #ffffff);
+  color: #334155;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.4;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -511,9 +537,16 @@ select:focus {
   margin-top: 10px;
 }
 
+.inline-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .port-editor-row {
   display: grid;
-  grid-template-columns: 1fr 88px;
+  grid-template-columns: minmax(90px, 1fr) 88px 96px;
   gap: 8px;
   align-items: center;
   padding: 8px 0;
@@ -604,6 +637,15 @@ select:focus {
 #connectionForm > .field {
   margin-left: 16px;
   margin-right: 16px;
+}
+
+.modal-field {
+  margin: 14px 16px;
+}
+
+input[type="color"] {
+  min-height: 38px;
+  padding: 3px;
 }
 
 .toast {

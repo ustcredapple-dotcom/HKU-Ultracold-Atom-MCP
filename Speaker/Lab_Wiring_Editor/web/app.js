@@ -5,9 +5,11 @@ import {
   createDevice,
   createEmptyProject,
   createPort,
+  createPortType,
   deleteConnection,
   deleteDevice,
   describeEndpoint,
+  getPortType,
   parseProjectJson,
   stringifyProject,
   summarizeProject,
@@ -37,6 +39,8 @@ const translations = {
     exampleTitle: "Load example",
     validate: "Validate",
     validateTitle: "Validate project",
+    arrange: "Arrange",
+    arrangeTitle: "Auto arrange devices",
     project: "Project",
     title: "Title",
     description: "Description",
@@ -90,6 +94,14 @@ const translations = {
     manufacturer: "Manufacturer",
     model: "Model",
     addPort: "Add Port",
+    addPortType: "Add Type",
+    portType: "Port type",
+    addPortTypeTitle: "Add Port Type",
+    color: "Color",
+    customPortTypePrompt: "Name of the new port type:",
+    customPortTypeCreated: "Port type added: {name}",
+    customPortTypeEmpty: "Port type name cannot be empty.",
+    autoArranged: "Devices arranged.",
     delete: "Delete",
     deleteDevice: "Delete Device",
     deleteConnection: "Delete Connection",
@@ -132,6 +144,17 @@ const translations = {
     summaryPortLine: "  - {name} [{details}]",
     summaryConnectionLine: "- {label}: {fromDevice}.{fromPort} -> {toDevice}.{toPort} ({cable})",
     portDetailsFallback: "port",
+    portTypeTtl: "TTL",
+    portTypeDac: "DAC",
+    portTypeAdc: "ADC",
+    portTypeRf: "RF",
+    portTypeAnalog: "Analog",
+    portTypeDigital: "Digital",
+    portTypeOptical: "Optical",
+    portTypeEthernet: "Ethernet",
+    portTypeUsb: "USB",
+    portTypePower: "Power",
+    portTypeCustom: "Custom",
     cableBnc: "BNC",
     cableSma: "SMA/RF",
     cableTtl: "TTL trigger",
@@ -159,6 +182,8 @@ const translations = {
     exampleTitle: "加载示例",
     validate: "校验",
     validateTitle: "校验工程",
+    arrange: "整理",
+    arrangeTitle: "自动整理器件位置",
     project: "工程",
     title: "标题",
     description: "描述",
@@ -212,6 +237,14 @@ const translations = {
     manufacturer: "厂家",
     model: "型号",
     addPort: "添加接口",
+    addPortType: "添加类型",
+    portType: "端口种类",
+    addPortTypeTitle: "添加端口种类",
+    color: "颜色",
+    customPortTypePrompt: "请输入新的端口种类名称:",
+    customPortTypeCreated: "已添加端口种类: {name}",
+    customPortTypeEmpty: "端口种类名称不能为空。",
+    autoArranged: "已自动整理器件位置。",
     delete: "删除",
     deleteDevice: "删除器件",
     deleteConnection: "删除连接",
@@ -254,6 +287,17 @@ const translations = {
     summaryPortLine: "  - {name} [{details}]",
     summaryConnectionLine: "- {label}: {fromDevice}.{fromPort} -> {toDevice}.{toPort}（{cable}）",
     portDetailsFallback: "接口",
+    portTypeTtl: "TTL",
+    portTypeDac: "DAC",
+    portTypeAdc: "ADC",
+    portTypeRf: "RF",
+    portTypeAnalog: "模拟",
+    portTypeDigital: "数字",
+    portTypeOptical: "光学",
+    portTypeEthernet: "以太网",
+    portTypeUsb: "USB",
+    portTypePower: "电源",
+    portTypeCustom: "自定义",
     cableBnc: "BNC",
     cableSma: "SMA/RF",
     cableTtl: "TTL 触发",
@@ -308,6 +352,28 @@ function cableLabel(cableType) {
   return key ? t(key) : cableType;
 }
 
+function portTypeLabel(project, portTypeId) {
+  const key = {
+    ttl: "portTypeTtl",
+    dac: "portTypeDac",
+    adc: "portTypeAdc",
+    rf: "portTypeRf",
+    analog: "portTypeAnalog",
+    digital: "portTypeDigital",
+    optical: "portTypeOptical",
+    ethernet: "portTypeEthernet",
+    usb: "portTypeUsb",
+    power: "portTypePower",
+    custom: "portTypeCustom"
+  }[portTypeId];
+  if (key) return t(key);
+  return getPortType(project, portTypeId)?.name || portTypeId || t("portTypeCustom");
+}
+
+function portTypeColor(project, portTypeId) {
+  return getPortType(project, portTypeId)?.color || "#64748b";
+}
+
 const els = {
   fileStatus: $("#fileStatus"),
   newProjectBtn: $("#newProjectBtn"),
@@ -316,6 +382,7 @@ const els = {
   saveAsProjectBtn: $("#saveAsProjectBtn"),
   loadExampleBtn: $("#loadExampleBtn"),
   validateBtn: $("#validateBtn"),
+  arrangeBtn: $("#arrangeBtn"),
   addDeviceBtn: $("#addDeviceBtn"),
   projectTitleInput: $("#projectTitleInput"),
   projectDescriptionInput: $("#projectDescriptionInput"),
@@ -339,6 +406,8 @@ const els = {
   connectionForm: $("#connectionForm"),
   connectionEndpoints: $("#connectionEndpoints"),
   cableTypeSelect: $("#cableTypeSelect"),
+  portTypeDialog: $("#portTypeDialog"),
+  portTypeForm: $("#portTypeForm"),
   fallbackFileInput: $("#fallbackFileInput"),
   toast: $("#toast"),
   languageButtons: document.querySelectorAll("[data-lang]")
@@ -397,10 +466,12 @@ function applyStaticTranslations() {
     ["#saveAsProjectBtn", "saveAs", "saveAsTitle"],
     ["#loadExampleBtn", "example", "exampleTitle"],
     ["#validateBtn", "validate", "validateTitle"],
+    ["#arrangeBtn", "arrange", "arrangeTitle"],
     ["#addDeviceBtn", "add", null],
     ["#copySummaryBtn", "copy", null],
     ["#createDeviceBtn", "create", null],
-    ["#createConnectionBtn", "connect", null]
+    ["#createConnectionBtn", "connect", null],
+    ["#createPortTypeBtn", "create", null]
   ];
   for (const [selector, textKey, titleKey] of buttonMap) {
     setElementText(selector, textKey);
@@ -414,7 +485,8 @@ function applyStaticTranslations() {
     [".right-panel .panel-section:nth-of-type(1) h2", "inspector"],
     [".right-panel .panel-section:nth-of-type(2) h2", "aiView"],
     ["#deviceDialog h2", "addDeviceBlock"],
-    ["#connectionDialog h2", "createConnection"]
+    ["#connectionDialog h2", "createConnection"],
+    ["#portTypeDialog h2", "addPortTypeTitle"]
   ];
   for (const [selector, key] of headings) setElementText(selector, key);
 
@@ -432,6 +504,8 @@ function applyStaticTranslations() {
   setInputLabel("#connectionForm input[name='label']", "label");
   setInputLabel("#connectionForm input[name='signalType']", "signalType");
   setInputLabel("#connectionForm textarea[name='notes']", "notes");
+  setInputLabel("#portTypeForm input[name='name']", "name");
+  setInputLabel("#portTypeForm input[name='color']", "color");
 
   setElementPlaceholder("#searchInput", "searchPlaceholder");
   setElementPlaceholder("#deviceForm input[name='location']", "locationPlaceholder");
@@ -544,6 +618,8 @@ function deviceMatchesSearch(device) {
     ...(device.ports || []).flatMap((port) => [
       port.name,
       port.direction,
+      port.portType,
+      portTypeLabel(state.project, port.portType),
       port.signalType,
       port.medium,
       port.connectorType,
@@ -603,25 +679,101 @@ function endpointPosition(endpoint) {
   };
 }
 
-function makeConnectionPath(from, to) {
-  const distance = Math.max(80, Math.abs(to.x - from.x) * 0.45);
-  const c1x = from.side === "left" ? from.x - distance : from.side === "right" ? from.x + distance : from.x;
-  const c1y = from.side === "bottom" ? from.y + distance * 0.55 : from.y;
-  const c2x = to.side === "left" ? to.x - distance : to.side === "right" ? to.x + distance : to.x;
-  const c2y = to.side === "bottom" ? to.y + distance * 0.55 : to.y;
-  return `M ${from.x} ${from.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${to.x} ${to.y}`;
+function roundedPolylinePath(points, radius = 14) {
+  const uniquePoints = [];
+  for (const point of points) {
+    const previous = uniquePoints.at(-1);
+    if (!previous || Math.hypot(point.x - previous.x, point.y - previous.y) > 1) {
+      uniquePoints.push(point);
+    }
+  }
+  const cleanPoints = [];
+  for (const point of uniquePoints) {
+    const previous = cleanPoints.at(-1);
+    const next = uniquePoints[uniquePoints.indexOf(point) + 1];
+    if (previous && next) {
+      const sameHorizontal = Math.abs(previous.y - point.y) < 1 && Math.abs(point.y - next.y) < 1;
+      const sameVertical = Math.abs(previous.x - point.x) < 1 && Math.abs(point.x - next.x) < 1;
+      if (sameHorizontal || sameVertical) continue;
+    }
+    cleanPoints.push(point);
+  }
+  if (cleanPoints.length < 2) return "";
+  const parts = [`M ${cleanPoints[0].x} ${cleanPoints[0].y}`];
+  for (let index = 1; index < cleanPoints.length - 1; index += 1) {
+    const previous = cleanPoints[index - 1];
+    const current = cleanPoints[index];
+    const next = cleanPoints[index + 1];
+    const inDistance = Math.hypot(current.x - previous.x, current.y - previous.y);
+    const outDistance = Math.hypot(next.x - current.x, next.y - current.y);
+    if (inDistance < 1 || outDistance < 1) continue;
+    const cornerRadius = Math.min(radius, inDistance / 2, outDistance / 2);
+    if (cornerRadius <= 0) {
+      parts.push(`L ${current.x} ${current.y}`);
+      continue;
+    }
+    const before = {
+      x: current.x + ((previous.x - current.x) / inDistance) * cornerRadius,
+      y: current.y + ((previous.y - current.y) / inDistance) * cornerRadius
+    };
+    const after = {
+      x: current.x + ((next.x - current.x) / outDistance) * cornerRadius,
+      y: current.y + ((next.y - current.y) / outDistance) * cornerRadius
+    };
+    parts.push(`L ${before.x} ${before.y}`);
+    parts.push(`Q ${current.x} ${current.y} ${after.x} ${after.y}`);
+  }
+  const last = cleanPoints.at(-1);
+  parts.push(`L ${last.x} ${last.y}`);
+  return parts.join(" ");
+}
+
+function makeConnectionPath(from, to, laneOffset = 0) {
+  const sameY = Math.abs(from.y - to.y) < 6;
+  const horizontalGap = Math.abs(to.x - from.x);
+  if (sameY && horizontalGap > 80) {
+    return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
+  }
+
+  const preferredGap = Math.max(70, Math.min(180, horizontalGap / 2));
+  const fromLead = from.side === "left" ? -preferredGap : from.side === "right" ? preferredGap : 0;
+  const toLead = to.side === "left" ? -preferredGap : to.side === "right" ? preferredGap : 0;
+  const start = { x: from.x, y: from.y };
+  const end = { x: to.x, y: to.y };
+  const startLead = {
+    x: from.side === "bottom" ? from.x : from.x + fromLead,
+    y: from.side === "bottom" ? from.y + preferredGap : from.y
+  };
+  const endLead = {
+    x: to.side === "bottom" ? to.x : to.x + toLead,
+    y: to.side === "bottom" ? to.y + preferredGap : to.y
+  };
+  const midX = Math.round((startLead.x + endLead.x) / 2 + laneOffset);
+  const points = [
+    start,
+    startLead,
+    { x: midX, y: startLead.y },
+    { x: midX, y: endLead.y },
+    endLead,
+    end
+  ];
+  return roundedPolylinePath(points, 16);
 }
 
 function portButtonHtml(port) {
   const pending = state.pendingPort?.portId === port.id ? "pending" : "";
+  const typeName = portTypeLabel(state.project, port.portType);
+  const typeColor = portTypeColor(state.project, port.portType);
   const dot = '<span class="port-dot"></span>';
   const label = `<span class="port-name">${escapeHtml(port.name)}</span>`;
-  const inner = port.direction === "output" ? `${label}${dot}` : `${dot}${label}`;
+  const badge = `<span class="port-type-badge">${escapeHtml(typeName)}</span>`;
+  const inner = port.direction === "output" ? `${badge}${label}${dot}` : `${dot}${label}${badge}`;
   return `
     <button class="port-button ${port.direction} ${pending}" type="button"
       data-device-id="${escapeHtml(state.renderingDeviceId)}"
       data-port-id="${escapeHtml(port.id)}"
-      title="${escapeHtml(port.name)} - ${escapeHtml(directionLabel(port.direction))}">
+      style="--port-color:${escapeHtml(typeColor)}"
+      title="${escapeHtml(port.name)} - ${escapeHtml(directionLabel(port.direction))} - ${escapeHtml(typeName)}">
       ${inner}
     </button>
   `;
@@ -681,10 +833,11 @@ function renderDeviceLayer() {
 
 function renderConnections() {
   els.connectionLayer.replaceChildren();
-  for (const connection of state.project.connections) {
+  for (const [index, connection] of state.project.connections.entries()) {
     const from = endpointPosition(connection.from);
     const to = endpointPosition(connection.to);
-    const pathData = makeConnectionPath(from, to);
+    const laneOffset = ((index % 5) - 2) * 10;
+    const pathData = makeConnectionPath(from, to, laneOffset);
     const cable = CABLE_TYPES.find((item) => item.id === connection.cableType) || CABLE_TYPES.at(-1);
 
     const hit = document.createElementNS(svgNS, "path");
@@ -693,6 +846,12 @@ function renderConnections() {
     hit.dataset.connectionId = connection.id;
     hit.addEventListener("click", () => selectConnection(connection.id));
     els.connectionLayer.append(hit);
+
+    const backdrop = document.createElementNS(svgNS, "path");
+    backdrop.setAttribute("d", pathData);
+    backdrop.setAttribute("class", "connection-backdrop");
+    backdrop.setAttribute("stroke-width", String((cable.stroke || 3) + 6));
+    els.connectionLayer.append(backdrop);
 
     const path = document.createElementNS(svgNS, "path");
     path.setAttribute("d", pathData);
@@ -760,6 +919,11 @@ function renderInspector() {
 }
 
 function deviceInspectorHtml(device) {
+  const portTypeOptions = (selected) => {
+    return (state.project.portTypes || [])
+      .map((type) => `<option value="${escapeHtml(type.id)}" ${selected === type.id ? "selected" : ""}>${escapeHtml(portTypeLabel(state.project, type.id))}</option>`)
+      .join("");
+  };
   return `
     <label class="field"><span>${escapeHtml(t("name"))}</span><input data-field="name" value="${escapeHtml(device.name)}"></label>
     <div class="mini-grid">
@@ -771,7 +935,7 @@ function deviceInspectorHtml(device) {
       <label class="field"><span>${escapeHtml(t("model"))}</span><input data-field="model" value="${escapeHtml(device.model || "")}"></label>
     </div>
     <label class="field"><span>${escapeHtml(t("notes"))}</span><textarea data-field="notes" rows="3">${escapeHtml(device.notes || "")}</textarea></label>
-    <div class="section-title"><h2>${escapeHtml(t("portsTitle"))}</h2><button id="addPortBtn" type="button">${escapeHtml(t("addPort"))}</button></div>
+    <div class="section-title"><h2>${escapeHtml(t("portsTitle"))}</h2><div class="inline-actions"><button id="addPortBtn" type="button">${escapeHtml(t("addPort"))}</button><button id="addPortTypeBtn" type="button">${escapeHtml(t("addPortType"))}</button></div></div>
     <div>
       ${(device.ports || []).map((port) => `
         <div class="port-editor-row" data-port-id="${escapeHtml(port.id)}">
@@ -780,6 +944,9 @@ function deviceInspectorHtml(device) {
             <option value="input" ${port.direction === "input" ? "selected" : ""}>${escapeHtml(t("input"))}</option>
             <option value="output" ${port.direction === "output" ? "selected" : ""}>${escapeHtml(t("output"))}</option>
             <option value="bidirectional" ${port.direction === "bidirectional" ? "selected" : ""}>${escapeHtml(t("interface"))}</option>
+          </select>
+          <select data-port-field="portType" title="${escapeHtml(t("portType"))}">
+            ${portTypeOptions(port.portType || "custom")}
           </select>
           <input data-port-field="signalType" value="${escapeHtml(port.signalType || "")}" placeholder="${escapeHtml(t("signalPlaceholderShort"))}">
           <input data-port-field="connectorType" value="${escapeHtml(port.connectorType || "")}" placeholder="${escapeHtml(t("connectorPlaceholder"))}">
@@ -828,6 +995,10 @@ function bindDeviceInspector(device) {
     device.ports.push(createPort({ name: t("newPort"), direction: "bidirectional" }));
     markDirty();
     render();
+  });
+  $("#addPortTypeBtn")?.addEventListener("click", () => {
+    els.portTypeForm.reset();
+    els.portTypeDialog.showModal();
   });
   $("#deleteDeviceBtn")?.addEventListener("click", () => {
     deleteDevice(state.project, device.id);
@@ -894,6 +1065,7 @@ function summarizeProjectForLanguage(project) {
     for (const port of device.ports || []) {
       const details = [
         directionLabel(port.direction),
+        portTypeLabel(project, port.portType),
         port.signalType,
         port.medium,
         port.connectorType
@@ -1175,13 +1347,13 @@ function validateAndReport() {
 function createLocalizedPorts({ genericCount = 0, inputCount = 0, outputCount = 0 }) {
   const ports = [];
   for (let index = 1; index <= Number(genericCount || 0); index += 1) {
-    ports.push(createPort({ name: t("defaultInterface", { index }), direction: "bidirectional" }));
+    ports.push(createPort({ name: t("defaultInterface", { index }), direction: "bidirectional", portType: "custom" }));
   }
   for (let index = 1; index <= Number(inputCount || 0); index += 1) {
-    ports.push(createPort({ name: t("defaultInput", { index }), direction: "input" }));
+    ports.push(createPort({ name: t("defaultInput", { index }), direction: "input", portType: "custom" }));
   }
   for (let index = 1; index <= Number(outputCount || 0); index += 1) {
-    ports.push(createPort({ name: t("defaultOutput", { index }), direction: "output" }));
+    ports.push(createPort({ name: t("defaultOutput", { index }), direction: "output", portType: "custom" }));
   }
   return ports;
 }
@@ -1189,6 +1361,57 @@ function createLocalizedPorts({ genericCount = 0, inputCount = 0, outputCount = 
 function resetDeviceForm() {
   els.deviceForm.reset();
   els.deviceForm.elements.name.value = t("newInstrument");
+}
+
+function autoArrangeDevices() {
+  const devices = state.project.devices;
+  if (!devices.length) return;
+  for (const device of devices) ensureDeviceSize(device);
+
+  const deviceById = new Map(devices.map((device) => [device.id, device]));
+  const levels = new Map(devices.map((device) => [device.id, 0]));
+  for (let pass = 0; pass < devices.length; pass += 1) {
+    for (const connection of state.project.connections) {
+      if (!deviceById.has(connection.from.deviceId) || !deviceById.has(connection.to.deviceId)) continue;
+      const fromLevel = levels.get(connection.from.deviceId) || 0;
+      const toLevel = levels.get(connection.to.deviceId) || 0;
+      if (connection.from.deviceId !== connection.to.deviceId && toLevel <= fromLevel) {
+        levels.set(connection.to.deviceId, fromLevel + 1);
+      }
+    }
+  }
+
+  if (!state.project.connections.length) {
+    devices.forEach((device, index) => {
+      const column = index % 3;
+      const row = Math.floor(index / 3);
+      device.position.x = 120 + column * 360;
+      device.position.y = 120 + row * 260;
+    });
+  } else {
+    const columns = new Map();
+    for (const device of devices) {
+      const level = levels.get(device.id) || 0;
+      if (!columns.has(level)) columns.set(level, []);
+      columns.get(level).push(device);
+    }
+    for (const [level, columnDevices] of [...columns.entries()].sort((a, b) => a[0] - b[0])) {
+      columnDevices.sort((a, b) => a.name.localeCompare(b.name));
+      let y = 120;
+      for (const device of columnDevices) {
+        ensureDeviceSize(device);
+        device.position.x = 120 + level * 410;
+        device.position.y = y;
+        y += Math.max(device.size.height + 70, 240);
+      }
+    }
+  }
+
+  state.zoom = 1;
+  state.pan = { x: 30, y: 30 };
+  markDirty();
+  render();
+  showToast(t("autoArranged"));
 }
 
 function bindEvents() {
@@ -1210,6 +1433,7 @@ function bindEvents() {
   }));
   els.loadExampleBtn.addEventListener("click", () => loadExample().catch((error) => showToast(error.message)));
   els.validateBtn.addEventListener("click", validateAndReport);
+  els.arrangeBtn.addEventListener("click", autoArrangeDevices);
   els.addDeviceBtn.addEventListener("click", () => {
     resetDeviceForm();
     els.deviceDialog.showModal();
@@ -1302,6 +1526,25 @@ function bindEvents() {
     } catch (error) {
       showToast(activeLanguage === "zh" ? t("invalidConnection") : error.message);
     }
+  });
+
+  els.portTypeForm.addEventListener("submit", (event) => {
+    if (event.submitter?.value === "cancel") return;
+    event.preventDefault();
+    const form = new FormData(els.portTypeForm);
+    const cleanName = String(form.get("name") || "").trim();
+    if (!cleanName) {
+      showToast(t("customPortTypeEmpty"));
+      return;
+    }
+    const portType = createPortType(state.project, {
+      name: cleanName,
+      color: String(form.get("color") || "#64748b")
+    });
+    els.portTypeDialog.close();
+    showToast(t("customPortTypeCreated", { name: portType.name }));
+    markDirty();
+    render();
   });
 
   window.addEventListener("keydown", (event) => {

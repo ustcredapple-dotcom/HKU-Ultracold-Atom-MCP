@@ -26,6 +26,7 @@
         <button id="saveAsProjectBtn" type="button" title="Save as new project">Save As</button>
         <button id="loadExampleBtn" type="button" title="Load example">Example</button>
         <button id="validateBtn" type="button" title="Validate project">Validate</button>
+        <button id="arrangeBtn" type="button" title="Auto arrange devices">Arrange</button>
       </nav>
     </header>
 
@@ -179,6 +180,27 @@
         <footer>
           <button value="cancel" type="submit">Cancel</button>
           <button id="createConnectionBtn" value="default" type="submit" class="primary">Connect</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="portTypeDialog" class="modal narrow">
+      <form method="dialog" id="portTypeForm">
+        <header>
+          <h2>Add Port Type</h2>
+          <button value="cancel" type="submit" class="icon-button" title="Close">x</button>
+        </header>
+        <label class="field modal-field">
+          <span>Name</span>
+          <input name="name" type="text" required placeholder="DAC, TTL, RF...">
+        </label>
+        <label class="field modal-field">
+          <span>Color</span>
+          <input name="color" type="color" value="#64748b">
+        </label>
+        <footer>
+          <button value="cancel" type="submit">Cancel</button>
+          <button id="createPortTypeBtn" value="default" type="submit" class="primary">Create</button>
         </footer>
       </form>
     </dialog>
