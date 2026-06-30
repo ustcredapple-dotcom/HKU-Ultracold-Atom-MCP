@@ -22,7 +22,7 @@ It starts a local web server and opens:
 http://127.0.0.1:8765/Speaker/Lab_Wiring_Editor/web/index.html
 ```
 
-The local server is used so the browser can read linker modules and use modern file save features.
+The local server is used so the browser can read linker modules, use modern file save features, and write backup files into `History/Tool_History`.
 
 ## Language
 
@@ -47,6 +47,8 @@ Each port can carry a `portType`, such as:
 - RF
 - Analog
 - Digital
+- Laser
+- Camera image / photo
 - Optical
 - Ethernet
 - USB
@@ -54,6 +56,31 @@ Each port can carry a `portType`, such as:
 - Custom
 
 Use the device inspector to edit a port's type. Use `Add Type` to add a project-specific custom port type. Custom port types are saved inside the `.labwire.json` project file.
+
+## AI View And Code View
+
+The lower-right panel has two modes:
+
+- `Summary`: a bilingual, AI-readable wiring summary.
+- `Code`: the editable `.labwire.json` project code.
+
+In `Code` mode, edit the JSON and click `Apply` to regenerate the graph from the code. The editor validates and normalizes the project through the linker engine before redrawing.
+
+## Auto Save And Backups
+
+Auto save is on by default.
+
+- When a project is opened, the opened version is backed up first.
+- Before a normal `Save` or auto-save writes a newer version, the previous version is backed up.
+- Every minute, changed projects are auto-saved. If the browser cannot write directly to the current file, a draft backup is written instead.
+
+Backups are written by the local editor server to:
+
+```text
+History/Tool_History/Lab_Wiring_Connector_Backups
+```
+
+The backup folder is organized by date and also maintains `backup_index.jsonl`.
 
 ## Layout
 

@@ -37,7 +37,7 @@ Core sections:
 - `connections`: wires, fibers, triggers, RF cables, BNC, SMA, TTL, optical paths, etc.
 - `canvas`: layout information for the human editor. AI may ignore this if only reasoning about wiring.
 
-Built-in port types include TTL, DAC, ADC, RF, Analog, Digital, Optical, Ethernet, USB, Power, and Custom. Users may add custom types, which are stored in the project file.
+Built-in port types include TTL, DAC, ADC, RF, Analog, Digital, Laser, Camera image/photo, Optical, Ethernet, USB, Power, and Custom. Users may add custom types, which are stored in the project file.
 
 ## Safety Note
 

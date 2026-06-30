@@ -20,6 +20,8 @@ export const DEFAULT_PORT_TYPES = [
   { id: "rf", name: "RF", color: "#dc2626", description: "Radio-frequency signal port." },
   { id: "analog", name: "Analog", color: "#7c3aed", description: "General analog signal port." },
   { id: "digital", name: "Digital", color: "#16a34a", description: "General digital signal port." },
+  { id: "laser", name: "Laser", color: "#f97316", description: "Laser beam or laser-control topology port." },
+  { id: "camera_image", name: "Camera image", color: "#0891b2", description: "Camera frame, photo, or image-data topology port." },
   { id: "optical", name: "Optical", color: "#ea580c", description: "Optical beam or fiber interface." },
   { id: "ethernet", name: "Ethernet", color: "#0f766e", description: "Network interface." },
   { id: "usb", name: "USB", color: "#475569", description: "USB interface." },
@@ -99,6 +101,8 @@ function inferPortType(port) {
   if (text.includes("rf") || text.includes("sma")) return "rf";
   if (text.includes("analog")) return "analog";
   if (text.includes("digital")) return "digital";
+  if (text.includes("laser")) return "laser";
+  if (text.includes("camera") || text.includes("image") || text.includes("photo") || text.includes("frame")) return "camera_image";
   if (text.includes("optical") || text.includes("fiber") || text.includes("beam")) return "optical";
   if (text.includes("ethernet")) return "ethernet";
   if (text.includes("usb")) return "usb";

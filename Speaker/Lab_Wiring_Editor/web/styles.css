@@ -139,6 +139,16 @@ button.icon-button {
   border-color: #64748b;
 }
 
+.toolbar button.autosave-toggle.active {
+  border-color: #14b8a6;
+  color: #ccfbf1;
+}
+
+.toolbar button.autosave-toggle:not(.active) {
+  border-color: #7f1d1d;
+  color: #fecaca;
+}
+
 .language-toggle {
   display: inline-grid;
   grid-template-columns: repeat(2, minmax(44px, auto));
@@ -196,6 +206,7 @@ button.icon-button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 12px;
 }
 
@@ -563,12 +574,43 @@ select:focus {
   gap: 8px;
 }
 
+.view-tabs {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.view-tabs button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 10px;
+}
+
+.view-tabs button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
 #summaryOutput {
   min-height: 180px;
   color: #1e293b;
   font-family: "Cascadia Mono", Consolas, monospace;
   font-size: 12px;
   line-height: 1.45;
+  resize: vertical;
+}
+
+#summaryOutput.code-mode {
+  min-height: 320px;
+  background: #0f172a;
+  color: #dbeafe;
+  caret-color: #38bdf8;
+  tab-size: 2;
 }
 
 .modal {

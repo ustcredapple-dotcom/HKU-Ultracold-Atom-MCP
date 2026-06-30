@@ -11,7 +11,6 @@ import {
   describeEndpoint,
   getPortType,
   parseProjectJson,
-  stringifyProject,
   summarizeProject,
   touchProject,
   validateProject
@@ -20,6 +19,8 @@ import {
 const $ = (selector) => document.querySelector(selector);
 const svgNS = "http://www.w3.org/2000/svg";
 const LANGUAGE_STORAGE_KEY = "hku.labWiringEditor.language";
+const BACKUP_ENDPOINT = "/api/lab-wiring/backups";
+const AUTO_SAVE_INTERVAL_MS = 60_000;
 
 const translations = {
   en: {
@@ -41,6 +42,9 @@ const translations = {
     validateTitle: "Validate project",
     arrange: "Arrange",
     arrangeTitle: "Auto arrange devices",
+    autoSaveOn: "Auto Save: On",
+    autoSaveOff: "Auto Save: Off",
+    autoSaveTitle: "Toggle automatic save and backup",
     project: "Project",
     title: "Title",
     description: "Description",
@@ -54,6 +58,10 @@ const translations = {
     interactionDefault: "Click a port, then click another port to create a connection.",
     inspector: "Inspector",
     aiView: "AI View",
+    summaryView: "Summary",
+    codeView: "Code",
+    applyCode: "Apply",
+    applyCodeTitle: "Apply JSON code to the graph",
     copy: "Copy",
     addDeviceBlock: "Add Device Block",
     close: "Close",
@@ -123,8 +131,14 @@ const translations = {
     validProject: "Project file is valid.",
     validWithWarnings: "Valid with {count} warning(s).",
     validationFailed: "Validation failed: {message}",
+    backupSaved: "Backup saved: {file}",
+    backupUnavailable: "Backup server is unavailable. Start the Lab Wiring Editor launcher for backups.",
+    autosavedFile: "Autosaved {file}",
+    autosavedDraft: "Autosaved draft backup.",
+    codeApplied: "Code applied to graph.",
+    codeApplyFailed: "Cannot apply code: {message}",
     newProjectCreated: "New project created.",
-    aiSummaryCopied: "AI summary copied.",
+    viewCopied: "View copied.",
     connectionCreated: "Connection created.",
     filePickerDesc: "Lab wiring project",
     newInstrument: "New instrument",
@@ -150,6 +164,8 @@ const translations = {
     portTypeRf: "RF",
     portTypeAnalog: "Analog",
     portTypeDigital: "Digital",
+    portTypeLaser: "Laser",
+    portTypeCameraImage: "Camera image",
     portTypeOptical: "Optical",
     portTypeEthernet: "Ethernet",
     portTypeUsb: "USB",
@@ -184,6 +200,9 @@ const translations = {
     validateTitle: "校验工程",
     arrange: "整理",
     arrangeTitle: "自动整理器件位置",
+    autoSaveOn: "自动保存：开",
+    autoSaveOff: "自动保存：关",
+    autoSaveTitle: "切换自动保存与备份",
     project: "工程",
     title: "标题",
     description: "描述",
@@ -197,6 +216,10 @@ const translations = {
     interactionDefault: "点击一个接口，再点击另一个接口来创建连接。",
     inspector: "属性",
     aiView: "AI 视图",
+    summaryView: "摘要",
+    codeView: "代码",
+    applyCode: "应用",
+    applyCodeTitle: "把 JSON 代码应用到图",
     copy: "复制",
     addDeviceBlock: "新增器件方块",
     close: "关闭",
@@ -266,8 +289,14 @@ const translations = {
     validProject: "工程文件校验通过。",
     validWithWarnings: "校验通过，但有 {count} 个警告。",
     validationFailed: "校验失败: {message}",
+    backupSaved: "已保存备份: {file}",
+    backupUnavailable: "备份服务器不可用。请用 Lab Wiring Editor 启动脚本打开网页以启用备份。",
+    autosavedFile: "已自动保存 {file}",
+    autosavedDraft: "已自动保存草稿备份。",
+    codeApplied: "代码已应用到图。",
+    codeApplyFailed: "代码无法应用: {message}",
     newProjectCreated: "已创建新工程。",
-    aiSummaryCopied: "AI 摘要已复制。",
+    viewCopied: "视图已复制。",
     connectionCreated: "连接已创建。",
     filePickerDesc: "实验室接线工程",
     newInstrument: "新器件",
@@ -293,6 +322,8 @@ const translations = {
     portTypeRf: "RF",
     portTypeAnalog: "模拟",
     portTypeDigital: "数字",
+    portTypeLaser: "激光",
+    portTypeCameraImage: "相机照片",
     portTypeOptical: "光学",
     portTypeEthernet: "以太网",
     portTypeUsb: "USB",
@@ -360,6 +391,8 @@ function portTypeLabel(project, portTypeId) {
     rf: "portTypeRf",
     analog: "portTypeAnalog",
     digital: "portTypeDigital",
+    laser: "portTypeLaser",
+    camera_image: "portTypeCameraImage",
     optical: "portTypeOptical",
     ethernet: "portTypeEthernet",
     usb: "portTypeUsb",
@@ -383,6 +416,7 @@ const els = {
   loadExampleBtn: $("#loadExampleBtn"),
   validateBtn: $("#validateBtn"),
   arrangeBtn: $("#arrangeBtn"),
+  autoSaveToggleBtn: $("#autoSaveToggleBtn"),
   addDeviceBtn: $("#addDeviceBtn"),
   projectTitleInput: $("#projectTitleInput"),
   projectDescriptionInput: $("#projectDescriptionInput"),
@@ -399,6 +433,9 @@ const els = {
   zoomInBtn: $("#zoomInBtn"),
   inspector: $("#inspector"),
   summaryOutput: $("#summaryOutput"),
+  summaryModeBtn: $("#summaryModeBtn"),
+  codeModeBtn: $("#codeModeBtn"),
+  applyCodeBtn: $("#applyCodeBtn"),
   copySummaryBtn: $("#copySummaryBtn"),
   deviceDialog: $("#deviceDialog"),
   deviceForm: $("#deviceForm"),
@@ -427,7 +464,14 @@ const state = {
   zoom: 1,
   pan: { x: 20, y: 20 },
   drag: null,
-  panDrag: null
+  panDrag: null,
+  rightView: "summary",
+  codeDraftDirty: false,
+  autoSaveEnabled: true,
+  autoSaveTimer: null,
+  lastSavedText: "",
+  lastAutoSaveText: "",
+  backupWarningShown: false
 };
 
 function setElementText(selector, key) {
@@ -468,6 +512,9 @@ function applyStaticTranslations() {
     ["#validateBtn", "validate", "validateTitle"],
     ["#arrangeBtn", "arrange", "arrangeTitle"],
     ["#addDeviceBtn", "add", null],
+    ["#summaryModeBtn", "summaryView", null],
+    ["#codeModeBtn", "codeView", null],
+    ["#applyCodeBtn", "applyCode", "applyCodeTitle"],
     ["#copySummaryBtn", "copy", null],
     ["#createDeviceBtn", "create", null],
     ["#createConnectionBtn", "connect", null],
@@ -477,6 +524,7 @@ function applyStaticTranslations() {
     setElementText(selector, textKey);
     if (titleKey) setElementTitle(selector, titleKey);
   }
+  setElementTitle("#autoSaveToggleBtn", "autoSaveTitle");
 
   const headings = [
     [".left-panel .panel-section:nth-of-type(1) h2", "project"],
@@ -545,6 +593,7 @@ function applyStaticTranslations() {
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   }
+  updateAutoSaveButton();
 }
 
 function escapeHtml(value) {
@@ -563,13 +612,60 @@ function showToast(message) {
   showToast.timer = setTimeout(() => els.toast.classList.remove("visible"), 2600);
 }
 
+function currentProjectText() {
+  return `${JSON.stringify(state.project, null, 2)}\n`;
+}
+
+function currentProjectFileName() {
+  const raw = state.fileName || state.project.metadata?.title || "lab_wiring";
+  return String(raw).toLowerCase().endsWith(".json") ? String(raw) : `${raw}.labwire.json`;
+}
+
+async function writeBackup(reason, content = currentProjectText(), { quiet = true } = {}) {
+  if (!content) return null;
+  try {
+    const response = await fetch(BACKUP_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: currentProjectFileName(),
+        reason,
+        content
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+    const result = await response.json();
+    state.backupWarningShown = false;
+    if (!quiet) {
+      showToast(t("backupSaved", { file: result.fileName || "backup" }));
+    }
+    return result;
+  } catch (error) {
+    console.warn("Lab wiring backup failed", error);
+    if (!quiet || !state.backupWarningShown) {
+      showToast(t("backupUnavailable"));
+      state.backupWarningShown = true;
+    }
+    return null;
+  }
+}
+
+function updateAutoSaveButton() {
+  if (!els.autoSaveToggleBtn) return;
+  els.autoSaveToggleBtn.textContent = t(state.autoSaveEnabled ? "autoSaveOn" : "autoSaveOff");
+  els.autoSaveToggleBtn.classList.toggle("active", state.autoSaveEnabled);
+  els.autoSaveToggleBtn.setAttribute("aria-pressed", String(state.autoSaveEnabled));
+}
+
 function markDirty() {
   state.dirty = true;
   touchProject(state.project);
   updateStatus();
 }
 
-function setProject(project, { fileName = "", fileHandle = null, dirty = false } = {}) {
+function setProject(project, { fileName = "", fileHandle = null, dirty = false, sourceText = "", keepSavedText = false } = {}) {
   state.project = project;
   state.fileName = fileName;
   state.fileHandle = fileHandle;
@@ -580,7 +676,12 @@ function setProject(project, { fileName = "", fileHandle = null, dirty = false }
   state.connectionDraft = null;
   state.zoom = project.canvas?.zoom || 1;
   state.pan = project.canvas?.pan || { x: 20, y: 20 };
+  state.codeDraftDirty = false;
   render();
+  if (!keepSavedText) {
+    state.lastSavedText = sourceText || (dirty ? "" : currentProjectText());
+    state.lastAutoSaveText = currentProjectText();
+  }
 }
 
 function updateStatus() {
@@ -1093,6 +1194,20 @@ function summarizeProjectForLanguage(project) {
 }
 
 function renderSummary() {
+  const isCodeView = state.rightView === "code";
+  els.summaryModeBtn.classList.toggle("active", !isCodeView);
+  els.codeModeBtn.classList.toggle("active", isCodeView);
+  els.applyCodeBtn.hidden = !isCodeView;
+  els.summaryOutput.readOnly = !isCodeView;
+  els.summaryOutput.classList.toggle("code-mode", isCodeView);
+
+  if (isCodeView) {
+    if (!state.codeDraftDirty) {
+      els.summaryOutput.value = currentProjectText();
+    }
+    return;
+  }
+
   const validation = validateProject(state.project);
   const header = validation.ok
     ? t("validationOk")
@@ -1100,6 +1215,37 @@ function renderSummary() {
   const warnings = validation.warnings.length ? `\n${t("warnings")}:\n- ${validation.warnings.join("\n- ")}` : "";
   const errors = validation.errors.length ? `\n${t("errors")}:\n- ${validation.errors.join("\n- ")}` : "";
   els.summaryOutput.value = `${header}${errors}${warnings}\n\n${summarizeProjectForLanguage(state.project)}`;
+}
+
+function setRightView(view) {
+  state.rightView = view === "code" ? "code" : "summary";
+  state.codeDraftDirty = false;
+  renderSummary();
+}
+
+async function applyCodeToProject() {
+  if (state.rightView !== "code") return;
+  const previousText = currentProjectText();
+  const savedText = state.lastSavedText;
+  const { fileName, fileHandle } = state;
+  try {
+    const parsed = parseProjectJson(els.summaryOutput.value);
+    await writeBackup("before-code-apply", previousText, { quiet: true });
+    setProject(parsed, {
+      fileName,
+      fileHandle,
+      dirty: true,
+      keepSavedText: true
+    });
+    state.lastSavedText = savedText;
+    state.lastAutoSaveText = "";
+    state.rightView = "code";
+    state.codeDraftDirty = false;
+    render();
+    showToast(t("codeApplied"));
+  } catch (error) {
+    showToast(t("codeApplyFailed", { message: error.message }));
+  }
 }
 
 function setLanguage(language) {
@@ -1267,14 +1413,23 @@ function centerOnDevice(deviceId) {
   applyWorldTransform();
 }
 
-function downloadProject() {
-  const blob = new Blob([stringifyProject(state.project)], { type: "application/json" });
+async function backupPreviousVersion(reason, nextText = currentProjectText()) {
+  if (!state.lastSavedText || state.lastSavedText === nextText) return null;
+  return writeBackup(reason, state.lastSavedText, { quiet: true });
+}
+
+async function downloadProject(mode = "manual") {
+  const nextText = currentProjectText();
+  await backupPreviousVersion(mode === "autosave" ? "before-autosave-download" : "before-download-save", nextText);
+  const blob = new Blob([nextText], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = state.fileName || `${state.project.metadata.title || "lab_wiring"}.labwire.json`;
   anchor.click();
   URL.revokeObjectURL(url);
+  state.lastSavedText = nextText;
+  state.lastAutoSaveText = nextText;
   state.dirty = false;
   updateStatus();
 }
@@ -1287,31 +1442,42 @@ async function openProject() {
     });
     const file = await handle.getFile();
     const text = await file.text();
-    setProject(parseProjectJson(text), { fileName: file.name, fileHandle: handle, dirty: false });
+    setProject(parseProjectJson(text), { fileName: file.name, fileHandle: handle, dirty: false, sourceText: text });
+    await writeBackup("opened", text, { quiet: true });
     showToast(t("openedFile", { file: file.name }));
     return;
   }
   els.fallbackFileInput.click();
 }
 
-async function saveProject() {
+async function saveProject(mode = "manual") {
+  const nextText = currentProjectText();
   if (state.fileHandle?.createWritable) {
+    await backupPreviousVersion(mode === "autosave" ? "before-autosave" : "before-manual-save", nextText);
     const writable = await state.fileHandle.createWritable();
-    await writable.write(stringifyProject(state.project));
+    await writable.write(nextText);
     await writable.close();
+    state.lastSavedText = nextText;
+    state.lastAutoSaveText = nextText;
     state.dirty = false;
     updateStatus();
-    showToast(t("savedFile", { file: state.fileName }));
+    showToast(mode === "autosave" ? t("autosavedFile", { file: state.fileName }) : t("savedFile", { file: state.fileName }));
+    return;
+  }
+  if (mode === "autosave") {
+    await writeBackup("autosave-draft", nextText, { quiet: true });
+    state.lastAutoSaveText = nextText;
+    showToast(t("autosavedDraft"));
     return;
   }
   if ("showSaveFilePicker" in window) {
-    await saveProjectAs();
+    await saveProjectAs(mode);
     return;
   }
-  downloadProject();
+  await downloadProject(mode);
 }
 
-async function saveProjectAs() {
+async function saveProjectAs(mode = "manual") {
   if ("showSaveFilePicker" in window) {
     const suggestedName = state.fileName || `${state.project.metadata.title || "lab_wiring"}.labwire.json`;
     const handle = await window.showSaveFilePicker({
@@ -1320,18 +1486,44 @@ async function saveProjectAs() {
     });
     state.fileHandle = handle;
     state.fileName = handle.name;
-    await saveProject();
+    await saveProject(mode);
     return;
   }
-  downloadProject();
+  await downloadProject(mode);
 }
 
 async function loadExample() {
   const response = await fetch("../../../linker/Lab_Wiring_Connector/projects/example_lab_wiring.labwire.json");
   if (!response.ok) throw new Error(t("failedLoadExample", { status: response.status }));
-  const project = parseProjectJson(await response.text());
-  setProject(project, { fileName: "example_lab_wiring.labwire.json", fileHandle: null, dirty: true });
+  const text = await response.text();
+  const project = parseProjectJson(text);
+  setProject(project, { fileName: "example_lab_wiring.labwire.json", fileHandle: null, dirty: true, sourceText: text });
   showToast(t("exampleLoaded"));
+}
+
+async function runAutoSave() {
+  if (!state.autoSaveEnabled) return;
+  const nextText = currentProjectText();
+  if (nextText === state.lastAutoSaveText) return;
+  await saveProject("autosave");
+}
+
+function startAutoSaveTimer() {
+  clearInterval(state.autoSaveTimer);
+  state.autoSaveTimer = setInterval(() => {
+    runAutoSave().catch((error) => {
+      console.warn("Lab wiring autosave failed", error);
+      showToast(error.message || t("backupUnavailable"));
+    });
+  }, AUTO_SAVE_INTERVAL_MS);
+}
+
+function setAutoSaveEnabled(enabled) {
+  state.autoSaveEnabled = Boolean(enabled);
+  updateAutoSaveButton();
+  if (state.autoSaveEnabled) {
+    runAutoSave().catch((error) => console.warn("Lab wiring autosave failed", error));
+  }
 }
 
 function validateAndReport() {
@@ -1434,6 +1626,10 @@ function bindEvents() {
   els.loadExampleBtn.addEventListener("click", () => loadExample().catch((error) => showToast(error.message)));
   els.validateBtn.addEventListener("click", validateAndReport);
   els.arrangeBtn.addEventListener("click", autoArrangeDevices);
+  els.autoSaveToggleBtn.addEventListener("click", () => setAutoSaveEnabled(!state.autoSaveEnabled));
+  els.summaryModeBtn.addEventListener("click", () => setRightView("summary"));
+  els.codeModeBtn.addEventListener("click", () => setRightView("code"));
+  els.applyCodeBtn.addEventListener("click", () => applyCodeToProject());
   els.addDeviceBtn.addEventListener("click", () => {
     resetDeviceForm();
     els.deviceDialog.showModal();
@@ -1459,16 +1655,34 @@ function bindEvents() {
   els.canvasViewport.addEventListener("pointerdown", startPan);
   window.addEventListener("pointermove", onPointerMove);
   window.addEventListener("pointerup", onPointerUp);
+  els.summaryOutput.addEventListener("input", () => {
+    if (state.rightView === "code") state.codeDraftDirty = true;
+  });
   els.copySummaryBtn.addEventListener("click", async () => {
     await navigator.clipboard.writeText(els.summaryOutput.value);
-    showToast(t("aiSummaryCopied"));
+    showToast(t("viewCopied"));
   });
   els.fallbackFileInput.addEventListener("change", async () => {
     const [file] = els.fallbackFileInput.files;
     if (!file) return;
-    setProject(parseProjectJson(await file.text()), { fileName: file.name, fileHandle: null, dirty: false });
+    const text = await file.text();
+    setProject(parseProjectJson(text), { fileName: file.name, fileHandle: null, dirty: false, sourceText: text });
+    await writeBackup("opened", text, { quiet: true });
     els.fallbackFileInput.value = "";
+    showToast(t("openedFile", { file: file.name }));
   });
+
+  for (const button of document.querySelectorAll("[data-dialog-close]")) {
+    button.addEventListener("click", () => {
+      const dialog = button.closest("dialog");
+      if (dialog === els.connectionDialog) {
+        state.pendingPort = null;
+        state.connectionDraft = null;
+        render();
+      }
+      dialog?.close("cancel");
+    });
+  }
 
   els.deviceForm.addEventListener("submit", (event) => {
     if (event.submitter?.value === "cancel") return;
@@ -1564,3 +1778,6 @@ function bindEvents() {
 
 bindEvents();
 render();
+state.lastSavedText = currentProjectText();
+state.lastAutoSaveText = state.lastSavedText;
+startAutoSaveTimer();

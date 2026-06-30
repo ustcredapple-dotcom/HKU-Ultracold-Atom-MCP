@@ -27,6 +27,7 @@
         <button id="loadExampleBtn" type="button" title="Load example">Example</button>
         <button id="validateBtn" type="button" title="Validate project">Validate</button>
         <button id="arrangeBtn" type="button" title="Auto arrange devices">Arrange</button>
+        <button id="autoSaveToggleBtn" type="button" class="autosave-toggle active" title="Auto save and backup">Auto Save: On</button>
       </nav>
     </header>
 
@@ -95,9 +96,14 @@
         <section class="panel-section">
           <div class="section-title">
             <h2>AI View</h2>
+            <div class="view-tabs" role="group" aria-label="AI view mode">
+              <button id="summaryModeBtn" type="button" class="active">Summary</button>
+              <button id="codeModeBtn" type="button">Code</button>
+            </div>
+            <button id="applyCodeBtn" type="button" hidden>Apply</button>
             <button id="copySummaryBtn" type="button">Copy</button>
           </div>
-          <textarea id="summaryOutput" rows="10" readonly></textarea>
+          <textarea id="summaryOutput" rows="10" readonly spellcheck="false"></textarea>
         </section>
       </aside>
     </main>
@@ -106,7 +112,7 @@
       <form method="dialog" id="deviceForm">
         <header>
           <h2>Add Device Block</h2>
-          <button value="cancel" type="submit" class="icon-button" title="Close">x</button>
+          <button value="cancel" type="button" class="icon-button" title="Close" data-dialog-close>x</button>
         </header>
         <div class="modal-grid">
           <label class="field">
@@ -148,7 +154,7 @@
           </label>
         </div>
         <footer>
-          <button value="cancel" type="submit">Cancel</button>
+          <button value="cancel" type="button" data-dialog-close>Cancel</button>
           <button id="createDeviceBtn" value="default" type="submit" class="primary">Create</button>
         </footer>
       </form>
@@ -158,7 +164,7 @@
       <form method="dialog" id="connectionForm">
         <header>
           <h2>Create Connection</h2>
-          <button value="cancel" type="submit" class="icon-button" title="Close">x</button>
+          <button value="cancel" type="button" class="icon-button" title="Close" data-dialog-close>x</button>
         </header>
         <div class="connection-endpoints" id="connectionEndpoints"></div>
         <label class="field">
@@ -178,7 +184,7 @@
           <textarea name="notes" rows="3"></textarea>
         </label>
         <footer>
-          <button value="cancel" type="submit">Cancel</button>
+          <button value="cancel" type="button" data-dialog-close>Cancel</button>
           <button id="createConnectionBtn" value="default" type="submit" class="primary">Connect</button>
         </footer>
       </form>
@@ -188,7 +194,7 @@
       <form method="dialog" id="portTypeForm">
         <header>
           <h2>Add Port Type</h2>
-          <button value="cancel" type="submit" class="icon-button" title="Close">x</button>
+          <button value="cancel" type="button" class="icon-button" title="Close" data-dialog-close>x</button>
         </header>
         <label class="field modal-field">
           <span>Name</span>
@@ -199,7 +205,7 @@
           <input name="color" type="color" value="#64748b">
         </label>
         <footer>
-          <button value="cancel" type="submit">Cancel</button>
+          <button value="cancel" type="button" data-dialog-close>Cancel</button>
           <button id="createPortTypeBtn" value="default" type="submit" class="primary">Create</button>
         </footer>
       </form>

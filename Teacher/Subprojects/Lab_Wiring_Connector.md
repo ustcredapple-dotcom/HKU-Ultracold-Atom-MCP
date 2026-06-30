@@ -33,7 +33,7 @@ Speaker/Lab_Wiring_Editor
 - 插入新的方块，方块代表实际仪器或器件。
 - 设置方块的接口数量、输入数量、输出数量。
 - 给每个接口命名，并设置方向、端口种类、信号类型、连接器类型等。
-- 使用默认端口种类，例如 TTL、DAC、ADC、RF、模拟、数字、光学、以太网、USB、电源。
+- 使用默认端口种类，例如 TTL、DAC、ADC、RF、模拟、数字、激光、相机照片/图像、光学、以太网、USB、电源。
 - 添加工程内自定义端口种类。
 - 点击两个端口后选择线型，创建连接。
 - 自动整理器件布局。
@@ -43,6 +43,8 @@ Speaker/Lab_Wiring_Editor
 - 加载示例工程。
 - 校验工程文件。
 - 查看 AI 摘要。
+- 在右下角 `代码 / Code` 视图直接编辑 `.labwire.json`，点击 `应用 / Apply` 后由代码重新生成图。
+- 自动保存模式默认开启：打开工程时先备份一次；每 1 分钟自动保存改动；每次正常保存或自动写入当前文件前，先把上一版本备份。
 
 双语模式说明:
 
@@ -110,6 +112,26 @@ http://127.0.0.1:8765/Speaker/Lab_Wiring_Editor/web/index.html
 ```
 
 本地服务器是必要的，因为网页需要读取 `linker` 中的 ES module，并使用浏览器的文件保存能力。
+
+当前启动脚本会运行:
+
+```text
+Speaker/Lab_Wiring_Editor/server.py
+```
+
+这个本地服务器同时提供备份 API:
+
+```text
+/api/lab-wiring/backups
+```
+
+备份归档在:
+
+```text
+History/Tool_History/Lab_Wiring_Connector_Backups
+```
+
+备份按日期分文件夹，并维护 `backup_index.jsonl`，便于之后追踪每次打开、保存、自动保存和代码应用前的版本。
 
 ## 自动整理与连线风格
 
