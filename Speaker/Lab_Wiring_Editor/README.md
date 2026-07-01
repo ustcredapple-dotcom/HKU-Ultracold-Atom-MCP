@@ -90,7 +90,7 @@ Use `Arrange` in the top toolbar to automatically organize devices. The editor p
 
 Connections are drawn as clean rounded orthogonal lines with a subtle white backing stroke for readability. When a device sits under a bottom-facing port, the router steps sideways before entering the main line path so arranged diagrams do not put a block directly on top of a wire.
 
-Connection endpoints are anchored to the actual visible port circle, not just to the device block. This is important for dense instruments such as ARTIQ where adjacent ports can be easy to confuse.
+Connection endpoints are anchored to the actual visible port circle, not just to the device block. The long route stays outside the device card, while a short same-color terminal stub is drawn above the card from the port circle to the outside route. This is important for dense instruments such as ARTIQ where adjacent ports can be easy to confuse.
 
 Use the mouse wheel over the canvas to zoom around the cursor position. The `-` and `+` buttons still provide fixed-step zoom controls.
 

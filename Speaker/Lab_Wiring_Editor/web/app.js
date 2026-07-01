@@ -23,6 +23,7 @@ const BACKUP_ENDPOINT = "/api/lab-wiring/backups";
 const DEFAULT_PROJECT_ENDPOINT = "/api/lab-wiring/projects/default";
 const ACTUAL_LAB_ENDPOINT = "/api/lab-wiring/actual";
 const AUTO_SAVE_INTERVAL_MS = 60_000;
+const PORT_ROUTE_GAP = 3;
 
 const translations = {
   en: {
@@ -469,6 +470,7 @@ const els = {
   world: $("#world"),
   connectionLayer: $("#connectionLayer"),
   deviceLayer: $("#deviceLayer"),
+  terminalLayer: $("#terminalLayer"),
   connectionQuickActions: $("#connectionQuickActions"),
   interactionStatus: $("#interactionStatus"),
   zoomStatus: $("#zoomStatus"),
@@ -929,7 +931,13 @@ function endpointPositionFromDom(endpoint) {
     : port?.direction === "input"
       ? "left"
       : nearestDeviceSide(point, nodeWorldRect);
-  return { x: point.x, y: point.y, side };
+  if (side === "left") {
+    return { x: nodeWorldRect.left - PORT_ROUTE_GAP, y: point.y, side, portX: point.x, portY: point.y };
+  }
+  if (side === "right") {
+    return { x: nodeWorldRect.right + PORT_ROUTE_GAP, y: point.y, side, portX: point.x, portY: point.y };
+  }
+  return { x: point.x, y: nodeWorldRect.bottom + PORT_ROUTE_GAP, side: "bottom", portX: point.x, portY: point.y };
 }
 
 function endpointPosition(endpoint) {
@@ -1184,8 +1192,21 @@ function renderDeviceLayer() {
   }
 }
 
+function drawConnectionTerminal(endpoint, connection, cable) {
+  if (!els.terminalLayer || typeof endpoint.portX !== "number" || typeof endpoint.portY !== "number") return;
+  if (Math.hypot(endpoint.x - endpoint.portX, endpoint.y - endpoint.portY) < 1) return;
+  const terminal = document.createElementNS(svgNS, "path");
+  terminal.setAttribute("d", `M ${endpoint.portX} ${endpoint.portY} L ${endpoint.x} ${endpoint.y}`);
+  terminal.setAttribute("class", "connection-terminal");
+  terminal.setAttribute("stroke", connection.color || cable.color);
+  terminal.setAttribute("stroke-width", cable.stroke || 3);
+  if (cable.dash) terminal.setAttribute("stroke-dasharray", cable.dash);
+  els.terminalLayer.append(terminal);
+}
+
 function renderConnections() {
   els.connectionLayer.replaceChildren();
+  if (els.terminalLayer) els.terminalLayer.replaceChildren();
   renderConnectionQuickActions();
   for (const [index, connection] of state.project.connections.entries()) {
     const from = endpointPosition(connection.from);
@@ -1193,6 +1214,8 @@ function renderConnections() {
     const laneOffset = ((index % 5) - 2) * 10;
     const pathData = makeConnectionPath(from, to, laneOffset, connectionObstacles(connection));
     const cable = CABLE_TYPES.find((item) => item.id === connection.cableType) || CABLE_TYPES.at(-1);
+    drawConnectionTerminal(from, connection, cable);
+    drawConnectionTerminal(to, connection, cable);
 
     const hit = document.createElementNS(svgNS, "path");
     hit.setAttribute("d", pathData);

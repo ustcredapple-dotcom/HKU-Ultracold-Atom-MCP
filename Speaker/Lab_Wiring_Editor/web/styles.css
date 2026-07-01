@@ -348,12 +348,17 @@ select:focus {
 }
 
 .connection-layer,
-.device-layer {
+.device-layer,
+.terminal-layer {
   position: absolute;
   inset: 0;
 }
 
 .device-layer {
+  pointer-events: none;
+}
+
+.terminal-layer {
   pointer-events: none;
 }
 
@@ -379,6 +384,13 @@ select:focus {
   stroke-width: 16;
   pointer-events: all;
   cursor: pointer;
+}
+
+.connection-terminal {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .connection-quick-actions {
