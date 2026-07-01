@@ -27,4 +27,6 @@ Date: 2026-07-01
 
 ## Pending Commit
 
-Commit hash and push status will be appended after the final git push.
+Main commit: `0fcd473` (`Show lab wiring terminal stubs above devices`)
+
+Push status: pushed to `main` on `https://github.com/ustcredapple-dotcom/HKU-Ultracold-Atom-MCP.git`.
